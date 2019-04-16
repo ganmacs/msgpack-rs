@@ -1,0 +1,12 @@
+[lib]
+name = "msgpack"
+
+[package]
+name = "msgpack-rs"
+version = "0.1.0"
+authors = ["Yuta Iwama <ganmacs@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+
+byteorder = "1"
