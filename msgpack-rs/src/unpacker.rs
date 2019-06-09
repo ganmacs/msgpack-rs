@@ -1,4 +1,5 @@
 use crate::{unpack, UnpackError, Value};
+use bytes;
 use std::io;
 use std::iter::Iterator;
 
@@ -18,9 +19,21 @@ where
     }
 }
 
+// impl<'a, R> Iterator for &'a Unpacker<R>
+// where
+//     R: io::Read,
+// {
+//     type Item = &'a Value;
+
+//     fn next(&mut self) -> Option<Self::Item> {
+//         // TODO: identify EOF
+//         // self.unpack_value().ok().map(|v| v.as_ref())
+//     }
+// }
+
 impl<R> Unpacker<R> {
     pub fn new(rd: R) -> Self {
-        Self { rd }
+        Unpacker { rd }
     }
 }
 

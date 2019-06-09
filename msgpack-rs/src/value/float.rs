@@ -1,10 +1,10 @@
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub enum Number {
     Float32(f32),
     Float64(f64),
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub struct Float {
     pub n: Number,
 }

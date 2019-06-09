@@ -1,10 +1,10 @@
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub enum Number {
     PosInt(u64),
     NegInt(i64),
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub struct Integer {
     pub n: Number,
 }
