@@ -34,7 +34,7 @@ pub enum Value {
     // Timestamp(i64, u32),
 }
 
-pub enum ValueRef<'a> {
+pub enum RefValue<'a> {
     // represents an integer
     Integer(integer::Integer),
 
@@ -54,10 +54,10 @@ pub enum ValueRef<'a> {
     String(&'a str),
 
     // represents a sequence of objects
-    Array(Vec<ValueRef<'a>>),
+    Array(Vec<RefValue<'a>>),
 
     // represents key-value pairs of objects
-    Map(Vec<(ValueRef<'a>, ValueRef<'a>)>),
+    Map(Vec<(RefValue<'a>, RefValue<'a>)>),
 
     // represents a tuple of type information and a byte array where type information is an integer whose meaning is defined by applications or MessagePack specification
     Extension(i8, &'a [u8]),
@@ -66,41 +66,41 @@ pub enum ValueRef<'a> {
 }
 
 impl Value {
-    pub fn to_ref(&self) -> ValueRef {
+    pub fn to_ref(&self) -> RefValue {
         match self {
-            &Value::Nil => ValueRef::Nil,
-            &Value::Boolean(val) => ValueRef::Boolean(val),
-            &Value::Float(v) => ValueRef::Float(v),
-            &Value::Integer(val) => ValueRef::Integer(val),
-            &Value::Binary(ref v) => ValueRef::Binary(v.as_slice()),
-            &Value::String(ref v) => ValueRef::String(v), // XXX
-            &Value::Array(ref v) => ValueRef::Array(v.iter().map(|v| v.to_ref()).collect()),
-            &Value::Map(ref v) => ValueRef::Map(
+            &Value::Nil => RefValue::Nil,
+            &Value::Boolean(val) => RefValue::Boolean(val),
+            &Value::Float(v) => RefValue::Float(v),
+            &Value::Integer(val) => RefValue::Integer(val),
+            &Value::Binary(ref v) => RefValue::Binary(v.as_slice()),
+            &Value::String(ref v) => RefValue::String(v), // XXX
+            &Value::Array(ref v) => RefValue::Array(v.iter().map(|v| v.to_ref()).collect()),
+            &Value::Map(ref v) => RefValue::Map(
                 v.iter()
                     .map(|&(ref k, ref v)| (k.to_ref(), v.to_ref()))
                     .collect(),
             ),
-            &Value::Extension(ty, ref buf) => ValueRef::Extension(ty, buf.as_slice()),
+            &Value::Extension(ty, ref buf) => RefValue::Extension(ty, buf.as_slice()),
         }
     }
 }
 
-impl<'a> ValueRef<'a> {
+impl<'a> RefValue<'a> {
     pub fn to_owned(&self) -> Value {
         match self {
-            &ValueRef::Nil => Value::Nil,
-            &ValueRef::Boolean(v) => Value::Boolean(v),
-            &ValueRef::Integer(v) => Value::Integer(v),
-            &ValueRef::Float(v) => Value::Float(v),
-            &ValueRef::Binary(v) => Value::Binary(v.into()),
-            &ValueRef::String(v) => Value::String(v.into()), // XXX
-            &ValueRef::Array(ref v) => Value::Array(v.iter().map(|v| v.to_owned()).collect()),
-            &ValueRef::Map(ref v) => Value::Map(
+            &RefValue::Nil => Value::Nil,
+            &RefValue::Boolean(v) => Value::Boolean(v),
+            &RefValue::Integer(v) => Value::Integer(v),
+            &RefValue::Float(v) => Value::Float(v),
+            &RefValue::Binary(v) => Value::Binary(v.into()),
+            &RefValue::String(v) => Value::String(v.into()), // XXX
+            &RefValue::Array(ref v) => Value::Array(v.iter().map(|v| v.to_owned()).collect()),
+            &RefValue::Map(ref v) => Value::Map(
                 v.iter()
                     .map(|&(ref k, ref v)| (k.to_owned(), v.to_owned()))
                     .collect(),
             ),
-            &ValueRef::Extension(ty, buf) => Value::Extension(ty, buf.into()),
+            &RefValue::Extension(ty, buf) => Value::Extension(ty, buf.into()),
         }
     }
 }

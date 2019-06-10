@@ -1,4 +1,4 @@
-use super::primitive::*;
+use crate::primitive::*;
 use crate::{code, value::Value, UnpackError};
 use std::io::{self, ErrorKind};
 use std::string;

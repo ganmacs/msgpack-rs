@@ -1,4 +1,5 @@
-use crate::{unpack, UnpackError, Value};
+use crate::{unpack, value::RefValue, BufferedRead, UnpackError, Value};
+
 use bytes;
 use std::io;
 use std::iter::Iterator;
@@ -34,6 +35,20 @@ where
 impl<R> Unpacker<R> {
     pub fn new(rd: R) -> Self {
         Unpacker { rd }
+    }
+}
+
+impl<'a, R: BufferedRead<'a>> Unpacker<R> {
+    pub fn unpack_string_ref(&mut self) -> Result<&'a str, UnpackError> {
+        unpack::unpack_str_ref(&mut self.rd)
+    }
+
+    pub fn unpack_bin_ref(&mut self) -> Result<&'a [u8], UnpackError> {
+        unpack::unpack_bin_ref(&mut self.rd)
+    }
+
+    pub fn unpack_ref_value(&mut self) -> Result<RefValue<'a>, UnpackError> {
+        unpack::ref_value::unpack_value_ref(&mut self.rd)
     }
 }
 

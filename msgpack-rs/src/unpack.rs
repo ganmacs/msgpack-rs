@@ -1,9 +1,10 @@
-mod primitive;
+pub mod ref_value;
 mod value;
-mod value_ref;
 
+use crate::primitive::*;
+use crate::BufferedRead;
 use crate::{code::Code, unpack_error::UnpackError};
-use primitive::*;
+// use ref_value;
 use std::io::{self, ErrorKind};
 use std::string;
 
@@ -105,12 +106,26 @@ pub fn unpack_bin_header<R: io::Read>(reader: &mut R) -> Result<usize, UnpackErr
     }
 }
 
+pub fn unpack_bin_ref<'a, R>(reader: &mut R) -> Result<&'a [u8], UnpackError>
+where
+    R: BufferedRead<'a>,
+{
+    ref_value::unpack_bin(reader)
+}
+
 pub fn unpack_str<R: io::Read>(reader: &mut R) -> Result<String, UnpackError> {
     let len = unpack_str_header(reader)?;
     let mut buf: Vec<u8> = vec![0; len];
     read_data(reader, &mut buf[..])?;
     string::String::from_utf8(buf)
         .map_err(|e| UnpackError::InvalidData(io::Error::new(ErrorKind::Other, e.to_string())))
+}
+
+pub fn unpack_str_ref<'a, R>(reader: &mut R) -> Result<&'a str, UnpackError>
+where
+    R: BufferedRead<'a>,
+{
+    ref_value::unpack_str(reader)
 }
 
 pub fn unpack_str_header<R: io::Read>(reader: &mut R) -> Result<usize, UnpackError> {
