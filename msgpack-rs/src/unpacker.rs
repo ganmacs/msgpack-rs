@@ -1,6 +1,5 @@
 use crate::{unpack, value::RefValue, BufferedRead, UnpackError, Value};
 
-use bytes;
 use std::io;
 use std::iter::Iterator;
 
@@ -8,10 +7,7 @@ pub struct Unpacker<R> {
     rd: R,
 }
 
-impl<R> Iterator for Unpacker<R>
-where
-    R: io::Read,
-{
+impl<R: io::Read> Iterator for Unpacker<R> {
     type Item = Value;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -19,18 +15,6 @@ where
         self.unpack_value().ok()
     }
 }
-
-// impl<'a, R> Iterator for &'a Unpacker<R>
-// where
-//     R: io::Read,
-// {
-//     type Item = &'a Value;
-
-//     fn next(&mut self) -> Option<Self::Item> {
-//         // TODO: identify EOF
-//         // self.unpack_value().ok().map(|v| v.as_ref())
-//     }
-// }
 
 impl<R> Unpacker<R> {
     pub fn new(rd: R) -> Self {

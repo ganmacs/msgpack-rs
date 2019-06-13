@@ -5,7 +5,6 @@ mod packer;
 mod primitive;
 pub mod unpack;
 mod unpack_error;
-pub mod unpack_ref;
 mod unpacker;
 mod value;
 

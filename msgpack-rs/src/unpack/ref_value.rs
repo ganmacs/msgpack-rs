@@ -2,7 +2,7 @@ use crate::primitive::*;
 use crate::{code, unpack, value::RefValue, BufferedRead, UnpackError};
 
 use std::error::Error;
-use std::io::{self, ErrorKind, Read};
+use std::io::{self, ErrorKind};
 use std::str;
 
 pub fn unpack_ary_data<'a, R>(reader: &mut R, len: usize) -> Result<Vec<RefValue<'a>>, UnpackError>
