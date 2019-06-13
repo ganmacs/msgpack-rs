@@ -7,14 +7,14 @@ pub struct Unpacker<R> {
     rd: R,
 }
 
-impl<R: io::Read> Iterator for Unpacker<R> {
-    type Item = Value;
+// impl<R: io::Read> Iterator for Unpacker<R> {
+//     type Item = Value;
 
-    fn next(&mut self) -> Option<Self::Item> {
-        // TODO: identify EOF
-        self.unpack_value().ok()
-    }
-}
+//     fn next(&mut self) -> Option<Self::Item> {
+//         // TODO: identify EOF
+//         self.unpack_value().ok()
+//     }
+// }
 
 impl<R> Unpacker<R> {
     pub fn new(rd: R) -> Self {
