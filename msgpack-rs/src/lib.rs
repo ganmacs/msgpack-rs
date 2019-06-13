@@ -15,7 +15,7 @@ pub use packer::Packer;
 pub use unpack::*;
 pub use unpack_error::UnpackError;
 pub use unpacker::Unpacker;
-pub use value::Value;
+pub use value::{RefValue, Value};
 
 use std::io::{self, Cursor, Read};
 
