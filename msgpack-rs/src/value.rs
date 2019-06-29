@@ -34,7 +34,7 @@ pub enum Value {
     // Timestamp(i64, u32),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum RefValue<'a> {
     // represents an integer
     Integer(integer::Integer),

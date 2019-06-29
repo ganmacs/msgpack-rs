@@ -4,7 +4,6 @@ mod value;
 use crate::primitive::*;
 use crate::BufferedRead;
 use crate::{code::Code, unpack_error::UnpackError};
-// use ref_value;
 use std::io::{self, ErrorKind};
 use std::string;
 

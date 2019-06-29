@@ -20,7 +20,7 @@ fn packer_unpacker() {
     packer.pack_str("s").unwrap();
 
     let mut reader = io::Cursor::new(buf);
-    let mut unpacker = msgpack::Unpacker::new(&mut reader);
+    let mut unpacker = msgpack::Unpacker::from_reader(&mut reader);
 
     assert_eq!(unpacker.unpack_nil().unwrap(), None as Option<usize>);
     assert_eq!(unpacker.unpack_bool().unwrap(), false);
