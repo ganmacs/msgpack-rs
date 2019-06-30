@@ -4,7 +4,7 @@ use std::iter::Iterator;
 use std::{cmp, io};
 pub struct RefUnpacker;
 pub struct RefUnpackFeeder<'a, R>(&'a mut R);
-use bytes::{Buf, BufMut, BytesMut};
+use bytes::{Buf, BytesMut};
 
 impl<'a, R> Iterator for RefUnpackFeeder<'a, R>
 where
@@ -38,6 +38,7 @@ pub struct Unpacker<R> {
     inner: R,
 }
 
+#[derive(Debug)]
 pub struct InnerBuf(io::Cursor<bytes::BytesMut>);
 
 impl io::Write for InnerBuf {

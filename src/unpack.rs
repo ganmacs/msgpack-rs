@@ -5,7 +5,6 @@ use crate::primitive::*;
 use crate::BufferedRead;
 use crate::{code::Code, unpack_error::UnpackError};
 use std::io::{self, ErrorKind};
-use std::string;
 
 pub use value::*;
 
