@@ -25,20 +25,6 @@ impl RefUnpacker {
         RefUnpackFeeder(rd)
     }
 
-    pub fn unpack_string_ref<'a, R>(rd: &mut R) -> Result<&'a str, UnpackError>
-    where
-        R: BufferedRead<'a>,
-    {
-        unpack::unpack_str_ref(rd)
-    }
-
-    pub fn unpack_bin_ref<'a, R>(rd: &mut R) -> Result<&'a [u8], UnpackError>
-    where
-        R: BufferedRead<'a>,
-    {
-        unpack::unpack_bin_ref(rd)
-    }
-
     pub fn unpack_ref_value<'a, R>(rd: &mut R) -> Result<RefValue<'a>, UnpackError>
     where
         R: BufferedRead<'a>,
