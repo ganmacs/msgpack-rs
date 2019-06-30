@@ -5,7 +5,7 @@ use std::io;
 pub fn unpack_bin_data<R: io::Read>(reader: &mut R, len: usize) -> Result<Vec<u8>, UnpackError> {
     let mut buf = Vec::with_capacity(len);
     buf.resize(len as usize, 0u8);
-    read_data(reader, &mut buf[..]);
+    read_data(reader, &mut buf[..])?;
     Ok(buf)
 }
 
