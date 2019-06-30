@@ -139,12 +139,48 @@ where
         Code::Float32 => RefValue::from(read_data_f32(reader)?),
         Code::Float64 => RefValue::from(read_data_f64(reader)?),
         Code::FixStr(len) => RefValue::String(unpack_str_data(reader, usize::from(len))?),
-        Code::Str8 | Code::Str16 | Code::Str32 => RefValue::String(unpack_str(reader)?),
-        Code::Bin8 | Code::Bin16 | Code::Bin32 => RefValue::Binary(unpack_bin(reader)?),
+        Code::Str8 => {
+            let len = usize::from(read_data_u8(reader)?);
+            RefValue::String(unpack_str_data(reader, len)?)
+        }
+        Code::Str16 => {
+            let len = usize::from(read_data_u16(reader)?);
+            RefValue::String(unpack_str_data(reader, len)?)
+        }
+        Code::Str32 => {
+            let len = read_data_u32(reader)? as usize;
+            RefValue::String(unpack_str_data(reader, len)?)
+        }
+        Code::Bin8 => {
+            let len = usize::from(read_data_u8(reader)?);
+            RefValue::Binary(unpack_bin_data(reader, len)?)
+        }
+        Code::Bin16 => {
+            let len = usize::from(read_data_u16(reader)?);
+            RefValue::Binary(unpack_bin_data(reader, len)?)
+        }
+        Code::Bin32 => {
+            let len = read_data_u32(reader)? as usize;
+            RefValue::Binary(unpack_bin_data(reader, len)?)
+        }
         Code::FixArray(len) => RefValue::Array(unpack_ary_data(reader, len as usize)?),
-        Code::Array16 | Code::Array32 => RefValue::Array(unpack_ary(reader)?),
+        Code::Array16 => {
+            let len = usize::from(read_data_u16(reader)?);
+            RefValue::Array(unpack_ary_data(reader, len)?)
+        }
+        Code::Array32 => {
+            let len = read_data_u32(reader)? as usize;
+            RefValue::Array(unpack_ary_data(reader, len)?)
+        }
         Code::FixMap(len) => RefValue::Map(unpack_map_data(reader, len as usize)?),
-        Code::Map16 | Code::Map32 => RefValue::Map(unpack_map(reader)?),
+        Code::Map16 => {
+            let len = read_data_u16(reader)? as usize;
+            RefValue::Map(unpack_map_data(reader, len)?)
+        }
+        Code::Map32 => {
+            let len = read_data_u16(reader)? as usize;
+            RefValue::Map(unpack_map_data(reader, len)?)
+        }
         Code::FixExt1 => {
             let (ty, vec) = unpack_ext_type_data(reader, 1)?;
             RefValue::Extension(ty, vec)
