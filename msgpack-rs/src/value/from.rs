@@ -1,5 +1,5 @@
-use crate::value::Value;
 use crate::value::RefValue;
+use crate::value::Value;
 
 macro_rules! from_pos_value_integer {
     ($($ty:ident)*) => {
@@ -47,6 +47,12 @@ impl From<bool> for Value {
     }
 }
 
+impl From<String> for Value {
+    fn from(v: String) -> Self {
+        Value::String(super::utf8_string::Utf8String::new(v))
+    }
+}
+
 macro_rules! from_pos_value_ref_integer {
     ($($ty:ident)*) => {
         $(
@@ -90,5 +96,11 @@ impl<'a> From<f64> for RefValue<'a> {
 impl<'a> From<bool> for RefValue<'a> {
     fn from(v: bool) -> Self {
         RefValue::Boolean(v)
+    }
+}
+
+impl<'a> From<&'a str> for RefValue<'a> {
+    fn from(v: &'a str) -> Self {
+        RefValue::String(super::utf8_string::Utf8StringRef::new(v))
     }
 }

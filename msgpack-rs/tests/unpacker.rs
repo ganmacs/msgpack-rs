@@ -43,7 +43,7 @@ fn unpacker_new_write_and_read() {
     );
     assert_eq!(
         unpacker.unpack_value().unwrap(),
-        Value::Map(vec![(Value::from(1 as u8), Value::String("s".to_owned()))])
+        Value::Map(vec![(Value::from(1 as u8), Value::from("s".to_owned()))])
     );
 }
 
@@ -83,6 +83,6 @@ fn feed_ref_slice() {
     );
     assert_eq!(
         items.next().unwrap(),
-        RefValue::Map(vec![(RefValue::from(1 as u8), RefValue::String("s"))])
+        RefValue::Map(vec![(RefValue::from(1 as u8), RefValue::from("s"))])
     );
 }

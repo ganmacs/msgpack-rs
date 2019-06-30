@@ -1,6 +1,13 @@
 pub mod float;
 pub mod from;
 pub mod integer;
+pub mod utf8_string;
+
+pub use float::Float;
+pub use float::Number as FloatNumber;
+pub use integer::Integer;
+pub use integer::Number as IntegerNumber;
+pub use utf8_string::{Utf8String, Utf8StringRef};
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Value {
@@ -20,7 +27,7 @@ pub enum Value {
     Binary(Vec<u8>),
 
     // Raw. extending Raw type represents a UTF-8 string
-    String(String),
+    String(utf8_string::Utf8String),
 
     // represents a sequence of objects
     Array(Vec<Value>),
@@ -52,7 +59,7 @@ pub enum RefValue<'a> {
     Binary(&'a [u8]),
 
     // Raw. extending Raw type represents a UTF-8 string
-    String(&'a str),
+    String(utf8_string::Utf8StringRef<'a>),
 
     // represents a sequence of objects
     Array(Vec<RefValue<'a>>),
@@ -74,7 +81,7 @@ impl Value {
             &Value::Float(v) => RefValue::Float(v),
             &Value::Integer(val) => RefValue::Integer(val),
             &Value::Binary(ref v) => RefValue::Binary(v.as_slice()),
-            &Value::String(ref v) => RefValue::String(v), // XXX
+            &Value::String(ref v) => RefValue::String(v.as_ref()), // XXX
             &Value::Array(ref v) => RefValue::Array(v.iter().map(|v| v.to_ref()).collect()),
             &Value::Map(ref v) => RefValue::Map(
                 v.iter()

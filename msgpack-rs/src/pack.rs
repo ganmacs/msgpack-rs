@@ -59,6 +59,29 @@ pub fn pack_str<W: io::Write>(writer: &mut W, v: &str) -> Result<(), PackError> 
     }
 }
 
+// for string contains invalid byte sequence.
+pub fn pack_str_from_slice<W: io::Write>(writer: &mut W, v: &[u8]) -> Result<(), PackError> {
+    let len = v.len();
+    if len < FIXSTR_LIMIT {
+        write_data_u8(writer, code::FIX_STR | len as u8)?;
+        write_all(writer, &v[..len])
+    } else if len < STR8_LIMIT {
+        write_data_u8(writer, code::STR8)?;
+        write_data_u8(writer, len as u8)?;
+        write_all(writer, &v[..len])
+    } else if len < STR16_LIMIT {
+        write_data_u8(writer, code::STR16)?;
+        write_data_u16(writer, len as u16)?;
+        write_all(writer, &v[..len])
+    } else if len < STR32_LIMIT {
+        write_data_u8(writer, code::STR32)?;
+        write_data_u32(writer, len as u32)?;
+        write_all(writer, &v[..len])
+    } else {
+        unreachable!()
+    }
+}
+
 const BIN8_LIMIT: usize = 1 << 8;
 const BIN16_LIMIT: usize = 1 << 16;
 const BIN32_LIMIT: usize = 1 << 32;

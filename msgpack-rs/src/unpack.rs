@@ -114,17 +114,27 @@ where
 
 pub fn unpack_str<R: io::Read>(reader: &mut R) -> Result<String, UnpackError> {
     let len = unpack_str_header(reader)?;
-    let mut buf: Vec<u8> = vec![0; len];
-    read_data(reader, &mut buf[..])?;
-    string::String::from_utf8(buf)
-        .map_err(|e| UnpackError::InvalidData(io::Error::new(ErrorKind::Other, e.to_string())))
+    let buf = value::unpack_str_data(reader, len)?;
+    match *buf {
+        Ok(_) => Ok(buf.into_string().unwrap()),
+        Err((_, e)) => Err(UnpackError::InvalidData(io::Error::new(
+            ErrorKind::Other,
+            e.to_string(),
+        ))),
+    }
 }
 
 pub fn unpack_str_ref<'a, R>(reader: &mut R) -> Result<&'a str, UnpackError>
 where
     R: BufferedRead<'a>,
 {
-    ref_value::unpack_str(reader)
+    match *ref_value::unpack_str(reader)? {
+        Ok(ref s) => Ok(s),
+        Err((_, e)) => Err(UnpackError::InvalidData(io::Error::new(
+            ErrorKind::Other,
+            e.to_string(),
+        ))),
+    }
 }
 
 pub fn unpack_str_header<R: io::Read>(reader: &mut R) -> Result<usize, UnpackError> {

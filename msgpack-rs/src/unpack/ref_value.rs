@@ -1,9 +1,8 @@
 use crate::primitive::*;
+use crate::value;
 use crate::{code, unpack, value::RefValue, BufferedRead, UnpackError};
 
-use std::error::Error;
 use std::io::{self, ErrorKind};
-use std::str;
 
 pub fn unpack_ary_data<'a, R>(reader: &mut R, len: usize) -> Result<Vec<RefValue<'a>>, UnpackError>
 where
@@ -48,21 +47,18 @@ where
     unpack_map_data(reader, len)
 }
 
-fn unpack_str_data<'a, R>(reader: &mut R, len: usize) -> Result<&'a str, UnpackError>
+fn unpack_str_data<'a, R>(
+    reader: &mut R,
+    len: usize,
+) -> Result<value::Utf8StringRef<'a>, UnpackError>
 where
     R: BufferedRead<'a>,
 {
     let buf = unpack_bin_data(reader, len)?;
-    match str::from_utf8(buf) {
-        Ok(s) => Ok(s),
-        Err(err) => Err(UnpackError::InvalidData(io::Error::new(
-            ErrorKind::InvalidData,
-            err.description(),
-        ))),
-    }
+    Ok(value::Utf8StringRef::from(buf))
 }
 
-pub fn unpack_str<'a, R>(reader: &mut R) -> Result<&'a str, UnpackError>
+pub fn unpack_str<'a, R>(reader: &mut R) -> Result<value::Utf8StringRef<'a>, UnpackError>
 where
     R: BufferedRead<'a>,
 {
@@ -75,7 +71,7 @@ fn test_unpack_str() {
     let v = vec![0xa5, 0x68, 0x65, 0x6c, 0x6c, 0x6f];
     let mut cur = io::Cursor::new(v.as_ref());
     let ret = unpack_str(&mut cur).unwrap();
-    assert_eq!(ret, "hello");
+    assert_eq!(*ret, Ok("hello"));
 }
 
 fn unpack_bin_data<'a, R>(reader: &mut R, len: usize) -> Result<&'a [u8], UnpackError>

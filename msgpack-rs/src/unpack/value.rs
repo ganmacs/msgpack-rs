@@ -1,14 +1,11 @@
 use crate::primitive::*;
-use crate::{code, value::Value, UnpackError};
-use std::io::{self, ErrorKind};
-use std::string;
+use crate::{code, value, value::Value, UnpackError};
+use std::io;
 
 pub fn unpack_bin_data<R: io::Read>(reader: &mut R, len: usize) -> Result<Vec<u8>, UnpackError> {
     let mut buf = Vec::with_capacity(len);
     buf.resize(len as usize, 0u8);
-    reader
-        .read_exact(&mut buf[..])
-        .map_err(UnpackError::InvalidData)?;
+    read_data(reader, &mut buf[..]);
     Ok(buf)
 }
 
@@ -21,9 +18,12 @@ pub fn unpack_ary_data<R: io::Read>(reader: &mut R, len: usize) -> Result<Vec<Va
     Ok(vec)
 }
 
-pub fn unpack_str_data<R: io::Read>(reader: &mut R, len: usize) -> Result<String, UnpackError> {
-    string::String::from_utf8(unpack_bin_data(reader, len)?)
-        .map_err(|e| UnpackError::InvalidData(io::Error::new(ErrorKind::Other, e.to_string())))
+pub fn unpack_str_data<R: io::Read>(
+    reader: &mut R,
+    len: usize,
+) -> Result<value::Utf8String, UnpackError> {
+    let buf = unpack_bin_data(reader, len)?;
+    Ok(value::Utf8String::from(buf))
 }
 
 pub fn unpack_map_data<R: io::Read>(
