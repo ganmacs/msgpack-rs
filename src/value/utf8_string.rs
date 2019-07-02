@@ -30,6 +30,13 @@ impl Utf8String {
         self.s.ok()
     }
 
+    pub fn as_slice(&self) -> &[u8] {
+        match &self.s {
+            Ok(s) => s.as_bytes(),
+            Err((v, _)) => v.as_ref(),
+        }
+    }
+
     pub fn into_err(self) -> Option<str::Utf8Error> {
         match self.s {
             Ok(_) => None,
@@ -117,6 +124,13 @@ impl<'a> Utf8StringRef<'a> {
 
     pub fn into_str(self) -> Option<String> {
         self.s.ok().map(|s| s.into())
+    }
+
+    pub fn as_slice(&self) -> &[u8] {
+        match self.s {
+            Ok(s) => s.as_bytes(),
+            Err((v, _)) => v,
+        }
     }
 
     pub fn into_err(self) -> Option<str::Utf8Error> {
