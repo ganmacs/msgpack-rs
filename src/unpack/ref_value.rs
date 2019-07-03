@@ -116,6 +116,9 @@ where
     Ok((ty, bin))
 }
 
+const TIMESTAMP64_SEC_MASK: u64 = (1 << 35) - 1;
+const TIMESTAMP64_NSEC_MASK: u32 = (1 << 31) - 1;
+
 pub fn unpack_value_ref<'a, R>(reader: &mut R) -> Result<RefValue<'a>, UnpackError>
 where
     R: BufferedRead<'a>,
@@ -190,21 +193,47 @@ where
             RefValue::Extension(ty, vec)
         }
         Code::FixExt4 => {
-            let (ty, vec) = unpack_ext_type_data(reader, 4)?;
-            RefValue::Extension(ty, vec)
+            let ty = read_data_i8(reader)?;
+
+            // TODO: refactor
+            if ty == -1 {
+                let v: u32 = read_data_u32(reader)?;
+                RefValue::Timestamp(v as i64, 0)
+            } else {
+                let buf = unpack_bin_data(reader, 4)?;
+                RefValue::Extension(ty, buf)
+            }
         }
         Code::FixExt8 => {
-            let (ty, vec) = unpack_ext_type_data(reader, 8)?;
-            RefValue::Extension(ty, vec)
+            let ty = read_data_i8(reader)?;
+
+            // TODO: refactor
+            if ty == -1 {
+                let v = read_data_u64(reader)?;
+                let sec = v | TIMESTAMP64_SEC_MASK;
+                let nsec = (v >> 34) as u32 | TIMESTAMP64_NSEC_MASK;
+                RefValue::Timestamp(sec as i64, nsec)
+            } else {
+                let buf = unpack_bin_data(reader, 4)?;
+                RefValue::Extension(ty, buf)
+            }
         }
         Code::FixExt16 => {
             let (ty, vec) = unpack_ext_type_data(reader, 16)?;
             RefValue::Extension(ty, vec)
         }
         Code::Ext8 => {
+            // TODO: refactor
             let len = usize::from(read_data_u8(reader)?);
-            let (ty, vec) = unpack_ext_type_data(reader, len)?;
-            RefValue::Extension(ty, vec)
+            let ty = read_data_i8(reader)?;
+            if len == 12 && ty == -1 {
+                let nsec = read_data_u32(reader)?;
+                let sec = read_data_i64(reader)?;
+                RefValue::Timestamp(sec as i64, nsec)
+            } else {
+                let buf = unpack_bin_data(reader, 4)?;
+                RefValue::Extension(ty, buf)
+            }
         }
         Code::Ext16 => {
             let len = usize::from(read_data_u16(reader)?);

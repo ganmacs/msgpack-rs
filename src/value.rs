@@ -37,8 +37,9 @@ pub enum Value {
 
     // represents a tuple of type information and a byte array where type information is an integer whose meaning is defined by applications or MessagePack specification
     Extension(i8, Vec<u8>),
+
     // represents an instantaneous point on the time-line in the world that is independent from time zones or calendars. Maximum precision is nanoseconds.
-    // Timestamp(i64, u32),
+    Timestamp(i64, u32),
 }
 
 #[derive(Debug, PartialEq)]
@@ -69,8 +70,9 @@ pub enum RefValue<'a> {
 
     // represents a tuple of type information and a byte array where type information is an integer whose meaning is defined by applications or MessagePack specification
     Extension(i8, &'a [u8]),
+
     // represents an instantaneous point on the time-line in the world that is independent from time zones or calendars. Maximum precision is nanoseconds.
-    // Timestamp(i64, u32),
+    Timestamp(i64, u32),
 }
 
 impl Value {
@@ -89,6 +91,7 @@ impl Value {
                     .collect(),
             ),
             &Value::Extension(ty, ref buf) => RefValue::Extension(ty, buf.as_slice()),
+            &Value::Timestamp(sec, nsec) => RefValue::Timestamp(sec, nsec),
         }
     }
 }
@@ -109,6 +112,7 @@ impl<'a> RefValue<'a> {
                     .collect(),
             ),
             &RefValue::Extension(ty, buf) => Value::Extension(ty, buf.into()),
+            &RefValue::Timestamp(sec, nsec) => Value::Timestamp(sec, nsec),
         }
     }
 }

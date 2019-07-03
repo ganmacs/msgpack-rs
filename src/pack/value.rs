@@ -1,7 +1,7 @@
 use super::primitive::write_all;
 use super::{
     pack_ary_header, pack_bin, pack_bool, pack_ext_header, pack_f32, pack_f64, pack_from_i64,
-    pack_from_u64, pack_map_header, pack_nil, pack_str, pack_str_from_slice,
+    pack_from_u64, pack_map_header, pack_nil, pack_str, pack_str_from_slice, pack_timestamp,
 };
 use crate::pack_error::PackError;
 
@@ -49,6 +49,6 @@ pub fn pack_value<W: io::Write>(writer: &mut W, val: Value) -> Result<(), PackEr
             pack_ext_header(writer, tag, v.len())?;
             write_all(writer, &v)
         }
-        // Value::Timestamp(sec, nsec) => pack_timestamp(writer, sec, nsec),
+        Value::Timestamp(sec, nsec) => pack_timestamp(writer, sec, nsec),
     }
 }
