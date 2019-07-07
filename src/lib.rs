@@ -2,7 +2,7 @@ mod code;
 pub mod pack;
 mod pack_error;
 mod packer;
-mod primitive;
+pub mod primitive;
 pub mod unpack;
 mod unpack_error;
 mod unpacker;

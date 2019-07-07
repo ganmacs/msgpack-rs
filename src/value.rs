@@ -9,6 +9,8 @@ pub use integer::Integer;
 pub use integer::Number as IntegerNumber;
 pub use utf8_string::{Utf8String, Utf8StringRef};
 
+pub struct Nil;
+
 #[derive(Clone, PartialEq, Debug)]
 pub enum Value {
     // represents an integer
@@ -94,6 +96,20 @@ impl Value {
             &Value::Timestamp(sec, nsec) => RefValue::Timestamp(sec, nsec),
         }
     }
+
+    pub fn to_nil(&self) -> Option<Nil> {
+        match self {
+            Value::Nil => Some(Nil),
+            _ => None,
+        }
+    }
+
+    pub fn to_ary(&self) -> Option<&Vec<Value>> {
+        match self {
+            Value::Array(v) => Some(v),
+            _ => None,
+        }
+    }
 }
 
 impl<'a> RefValue<'a> {
@@ -113,6 +129,34 @@ impl<'a> RefValue<'a> {
             ),
             &RefValue::Extension(ty, buf) => Value::Extension(ty, buf.into()),
             &RefValue::Timestamp(sec, nsec) => Value::Timestamp(sec, nsec),
+        }
+    }
+
+    pub fn to_nil(&self) -> Option<Nil> {
+        match self {
+            RefValue::Nil => Some(Nil),
+            _ => None,
+        }
+    }
+
+    pub fn to_ary(&self) -> Option<&Vec<RefValue>> {
+        match self {
+            RefValue::Array(v) => Some(v),
+            _ => None,
+        }
+    }
+
+    pub fn to_str(&self) -> Option<&str> {
+        match self {
+            RefValue::String(v) => v.as_str(),
+            _ => None,
+        }
+    }
+
+    pub fn to_slice(&self) -> Option<&[u8]> {
+        match self {
+            RefValue::String(v) => Some(v.as_slice()),
+            _ => None,
         }
     }
 }
