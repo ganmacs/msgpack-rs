@@ -214,7 +214,7 @@ where
                 let nsec = (v >> 34) as u32 | TIMESTAMP64_NSEC_MASK;
                 RefValue::Timestamp(sec as i64, nsec)
             } else {
-                let buf = unpack_bin_data(reader, 4)?;
+                let buf = unpack_bin_data(reader, 8)?;
                 RefValue::Extension(ty, buf)
             }
         }
