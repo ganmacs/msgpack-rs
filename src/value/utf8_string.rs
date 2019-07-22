@@ -66,7 +66,12 @@ impl fmt::Display for Utf8String {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match self.s {
             Ok(ref s) => write!(fmt, "\"{}\"", s),
-            Err(ref err) => fmt::Debug::fmt(&err.0, fmt),
+            Err(ref err) => {
+                for v in err.0.iter() {
+                    write!(fmt, "\"{:X}\"", v)?
+                }
+                Ok(())
+            }
         }
     }
 }
@@ -153,7 +158,12 @@ impl<'a> fmt::Display for Utf8StringRef<'a> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match self.s {
             Ok(ref s) => write!(fmt, "\"{}\"", s),
-            Err(ref err) => fmt::Debug::fmt(&err.0, fmt),
+            Err(ref err) => {
+                for v in err.0.iter() {
+                    write!(fmt, "\"{:X}\"", v)?
+                }
+                Ok(())
+            }
         }
     }
 }

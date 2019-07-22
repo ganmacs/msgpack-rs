@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum Number {
     PosInt(u64),
@@ -38,3 +40,12 @@ macro_rules! impl_from_neg_integer {
 }
 
 impl_from_neg_integer! {i8 i16 i32 i64 isize}
+
+impl fmt::Display for Integer {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.n {
+            Number::PosInt(v) => write!(f, "{}", v),
+            Number::NegInt(v) => write!(f, "{}", v),
+        }
+    }
+}

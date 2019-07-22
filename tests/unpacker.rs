@@ -69,8 +69,6 @@ fn unpacker_new_long_write_and_read() {
     }
 }
 
-// if size is invalid, do not panic!
-
 #[test]
 fn unpacker_iter() {
     let val = vec![0xc0, 0xc2, 0x01];

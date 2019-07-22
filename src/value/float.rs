@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum Number {
     Float32(f32),
@@ -23,6 +25,15 @@ impl From<f32> for Float {
     fn from(u: f32) -> Self {
         Float {
             n: { Number::Float32(u) },
+        }
+    }
+}
+
+impl fmt::Display for Float {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.n {
+            Number::Float32(v) => write!(f, "{}", v),
+            Number::Float64(v) => write!(f, "{}", v),
         }
     }
 }

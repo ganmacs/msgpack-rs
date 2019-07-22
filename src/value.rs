@@ -9,6 +9,9 @@ pub use integer::Integer;
 pub use integer::Number as IntegerNumber;
 pub use utf8_string::{Utf8String, Utf8StringRef};
 
+use chrono::{self, TimeZone};
+use std::fmt;
+
 pub struct Nil;
 
 #[derive(Clone, PartialEq, Debug)]
@@ -44,6 +47,63 @@ pub enum Value {
     Timestamp(i64, u32),
 }
 
+impl fmt::Display for Value {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Value::Nil => write!(f, "null"),
+            Value::Boolean(val) => write!(f, "{}", if *val { "true" } else { "false" }),
+            Value::Float(val) => val.fmt(f),
+            Value::Integer(val) => val.fmt(f),
+            Value::Binary(ref val) => {
+                for v in val {
+                    write!(f, "{:02X}", v)?;
+                }
+                Ok(())
+            }
+            Value::String(ref val) => val.fmt(f),
+            Value::Array(ref val) => {
+                write!(f, "[")?;
+                let mut s = true;
+                for v in val {
+                    if s {
+                        s = false
+                    } else {
+                        write!(f, ", ")?;
+                    }
+
+                    v.fmt(f)?;
+                }
+                write!(f, "]")
+            }
+            Value::Map(ref val) => {
+                write!(f, "{{")?;
+                let mut s = true;
+                for v in val {
+                    if s {
+                        s = false
+                    } else {
+                        write!(f, ", ")?;
+                    }
+
+                    write!(f, "{}: {}", v.0, v.1)?;
+                }
+                write!(f, "}}")
+            }
+            Value::Extension(ty, ref buf) => {
+                write!(f, "Extension({}, ", ty)?;
+                for b in buf {
+                    write!(f, "{:X}", b)?;
+                }
+                write!(f, ")")
+            }
+
+            Value::Timestamp(sec, nsec) => {
+                write!(f, "{}", chrono::Local.timestamp(*sec as i64, *nsec))
+            }
+        }
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub enum RefValue<'a> {
     // represents an integer
@@ -75,6 +135,62 @@ pub enum RefValue<'a> {
 
     // represents an instantaneous point on the time-line in the world that is independent from time zones or calendars. Maximum precision is nanoseconds.
     Timestamp(i64, u32),
+}
+
+impl<'a> fmt::Display for RefValue<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            RefValue::Nil => write!(f, "null"),
+            RefValue::Boolean(val) => write!(f, "{}", if *val { "true" } else { "false" }),
+            RefValue::Float(val) => val.fmt(f),
+            RefValue::Integer(val) => val.fmt(f),
+            RefValue::Binary(val) => {
+                for v in *val {
+                    write!(f, "{:02X}", v)?;
+                }
+                Ok(())
+            }
+            RefValue::String(ref val) => val.fmt(f),
+            RefValue::Array(ref val) => {
+                write!(f, "[")?;
+                let mut s = true;
+                for v in val {
+                    if s {
+                        s = false
+                    } else {
+                        write!(f, ", ")?;
+                    }
+
+                    v.fmt(f)?;
+                }
+                write!(f, "]")
+            }
+            RefValue::Map(ref val) => {
+                write!(f, "{{")?;
+                let mut s = true;
+                for v in val {
+                    if s {
+                        s = false
+                    } else {
+                        write!(f, ", ")?;
+                    }
+
+                    write!(f, "{}: {}", v.0, v.1)?;
+                }
+                write!(f, "}}")
+            }
+            RefValue::Extension(ty, buf) => {
+                write!(f, "Extension({}, ", ty)?;
+                for b in *buf {
+                    write!(f, "{:X}", b)?;
+                }
+                write!(f, ")")
+            }
+            RefValue::Timestamp(sec, nsec) => {
+                write!(f, "{}", chrono::Local.timestamp(*sec as i64, *nsec))
+            }
+        }
+    }
 }
 
 impl Value {
