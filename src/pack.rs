@@ -159,11 +159,11 @@ pub fn pack_ext_header<W: io::Write>(
         4 => write_data_u8(writer, code::FIXEXT4)?,
         8 => write_data_u8(writer, code::FIXEXT8)?,
         16 => write_data_u8(writer, code::FIXEXT16)?,
-        17...256 => {
+        17..=256 => {
             write_data_u8(writer, code::EXT8)?;
             write_data_u8(writer, len as u8)?
         }
-        256...65536 => {
+        256..=65536 => {
             write_data_u8(writer, code::EXT16)?;
             write_data_u16(writer, len as u16)?
         }

@@ -80,11 +80,11 @@ pub enum Code {
 impl Code {
     fn from_u8(v: u8) -> Self {
         match v {
-            0x00...0x7f => Code::PosInt(v),
-            0x80...0x8f => Code::FixMap(v - 0x80),
-            0x90...0x9f => Code::FixArray(v - 0x90),
-            0xa0...0xbf => Code::FixStr(v - 0xa0),
-            0xe0...0xff => Code::NegInt(v as i8),
+            0x00..=0x7f => Code::PosInt(v),
+            0x80..=0x8f => Code::FixMap(v - 0x80),
+            0x90..=0x9f => Code::FixArray(v - 0x90),
+            0xa0..=0xbf => Code::FixStr(v - 0xa0),
+            0xe0..=0xff => Code::NegInt(v as i8),
             NIL => Code::Nil,
             FALSE => Code::False,
             TRUE => Code::True,
