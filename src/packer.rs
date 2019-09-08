@@ -2,13 +2,26 @@ use std::io;
 
 use crate::{pack, PackError, Value};
 
+#[derive(Debug)]
 pub struct Packer<W> {
-    wr: W,
+    pub(crate) wr: W,
 }
 
 impl<W> Packer<W> {
     pub fn new(writer: W) -> Packer<W> {
         Packer { wr: writer }
+    }
+
+    pub fn get_ref(&self) -> &W {
+        &self.wr
+    }
+
+    pub fn get_mut(&mut self) -> &mut W {
+        &mut self.wr
+    }
+
+    pub fn into_inner(self) -> W {
+        self.wr
     }
 }
 
