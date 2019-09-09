@@ -6,7 +6,7 @@ use std::io::Error;
 #[derive(Debug)]
 pub enum UnpackError {
     InvalidData(Error),
-    TypeMismatch(code::Code),
+    TypeMismatch(code::Code, String),
 }
 
 impl Display for UnpackError {

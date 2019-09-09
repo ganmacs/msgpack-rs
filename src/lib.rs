@@ -1,4 +1,5 @@
 mod code;
+pub mod de;
 pub mod pack;
 mod pack_error;
 mod packer;

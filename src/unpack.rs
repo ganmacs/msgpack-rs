@@ -6,34 +6,35 @@ use crate::BufferedRead;
 use crate::{code::Code, unpack_error::UnpackError};
 use std::io::{self, ErrorKind};
 
+pub use crate::primitive::read_code;
 pub use value::*;
 
 pub fn unpack_u8<R: io::Read>(reader: &mut R) -> Result<u8, UnpackError> {
     match read_code(reader)? {
         Code::PosInt(v) => Ok(v),
         Code::Uint8 => read_data_u8(reader),
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "u8".to_string())),
     }
 }
 
 pub fn unpack_u16<R: io::Read>(reader: &mut R) -> Result<u16, UnpackError> {
     match read_code(reader)? {
         Code::Uint16 => read_data_u16(reader),
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "u16".to_string())),
     }
 }
 
 pub fn unpack_u32<R: io::Read>(reader: &mut R) -> Result<u32, UnpackError> {
     match read_code(reader)? {
         Code::Uint32 => read_data_u32(reader),
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "u32".to_string())),
     }
 }
 
 pub fn unpack_u64<R: io::Read>(reader: &mut R) -> Result<u64, UnpackError> {
     match read_code(reader)? {
         Code::Uint64 => read_data_u64(reader),
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "u64".to_string())),
     }
 }
 
@@ -41,42 +42,42 @@ pub fn unpack_i8<R: io::Read>(reader: &mut R) -> Result<i8, UnpackError> {
     match read_code(reader)? {
         Code::NegInt(v) => Ok(v),
         Code::Int8 => read_data_i8(reader),
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "i8".to_string())),
     }
 }
 
 pub fn unpack_i16<R: io::Read>(reader: &mut R) -> Result<i16, UnpackError> {
     match read_code(reader)? {
         Code::Int16 => read_data_i16(reader),
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "i16".to_string())),
     }
 }
 
 pub fn unpack_i32<R: io::Read>(reader: &mut R) -> Result<i32, UnpackError> {
     match read_code(reader)? {
         Code::Int32 => read_data_i32(reader),
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "i32".to_string())),
     }
 }
 
 pub fn unpack_i64<R: io::Read>(reader: &mut R) -> Result<i64, UnpackError> {
     match read_code(reader)? {
         Code::Int64 => read_data_i64(reader),
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "i64".to_string())),
     }
 }
 
 pub fn unpack_f32<R: io::Read>(reader: &mut R) -> Result<f32, UnpackError> {
     match read_code(reader)? {
         Code::Int32 => read_data_f32(reader),
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "f32".to_string())),
     }
 }
 
 pub fn unpack_f64<R: io::Read>(reader: &mut R) -> Result<f64, UnpackError> {
     match read_code(reader)? {
         Code::Int64 => read_data_f64(reader),
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "f64".to_string())),
     }
 }
 
@@ -84,14 +85,14 @@ pub fn unpack_bool<R: io::Read>(reader: &mut R) -> Result<bool, UnpackError> {
     match read_code(reader)? {
         Code::True => Ok(true),
         Code::False => Ok(false),
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "bool".to_string())),
     }
 }
 
 pub fn unpack_nil<T, R: io::Read>(reader: &mut R) -> Result<Option<T>, UnpackError> {
     match read_code(reader)? {
         Code::Nil => Ok(None),
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "nil".to_string())),
     }
 }
 
@@ -100,7 +101,7 @@ pub fn unpack_bin_header<R: io::Read>(reader: &mut R) -> Result<usize, UnpackErr
         Code::Bin8 => read_data_u8(reader).map(usize::from),
         Code::Bin16 => read_data_u16(reader).map(usize::from),
         Code::Bin32 => read_data_u32(reader).map(|v| v as usize),
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "binary header".to_string())),
     }
 }
 
@@ -142,7 +143,7 @@ pub fn unpack_str_header<R: io::Read>(reader: &mut R) -> Result<usize, UnpackErr
         Code::Str8 => read_data_u8(reader).map(usize::from),
         Code::Str16 => read_data_u16(reader).map(usize::from),
         Code::Str32 => read_data_u32(reader).map(|v| v as usize),
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "str header".to_string())),
     }
 }
 
@@ -151,7 +152,7 @@ pub fn unpack_ary_header<R: io::Read>(reader: &mut R) -> Result<usize, UnpackErr
         Code::FixArray(v) => Ok(usize::from(v)),
         Code::Array16 => read_data_u16(reader).map(usize::from),
         Code::Array32 => read_data_u32(reader).map(|v| v as usize),
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "array header".to_string())),
     }
 }
 
@@ -160,7 +161,7 @@ pub fn unpack_map_header<R: io::Read>(reader: &mut R) -> Result<usize, UnpackErr
         Code::FixMap(v) => Ok(usize::from(v)),
         Code::Map16 => read_data_u16(reader).map(usize::from),
         Code::Map32 => read_data_u32(reader).map(|v| v as usize),
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "map header".to_string())),
     }
 }
 
@@ -171,7 +172,7 @@ pub fn unpack_fixext1<R: io::Read>(reader: &mut R) -> Result<(i8, u8), UnpackErr
             let data = read_data_u8(reader)?;
             Ok((ty, data))
         }
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "fixext1 header".to_string())),
     }
 }
 
@@ -187,7 +188,7 @@ pub fn unpack_fixext2<R: io::Read>(reader: &mut R) -> Result<(i8, [u8; 2]), Unpa
             read_fixext_data(reader, &mut buf)?;
             Ok((id, buf))
         }
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "fixext2 header".to_string())),
     }
 }
 
@@ -199,7 +200,7 @@ pub fn unpack_fixext4<R: io::Read>(reader: &mut R) -> Result<(i8, [u8; 4]), Unpa
             read_fixext_data(reader, &mut buf)?;
             Ok((id, buf))
         }
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "fixext4 header".to_string())),
     }
 }
 
@@ -211,7 +212,7 @@ pub fn unpack_fixext8<R: io::Read>(reader: &mut R) -> Result<(i8, [u8; 8]), Unpa
             read_fixext_data(reader, &mut buf)?;
             Ok((id, buf))
         }
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "fixext8 header".to_string())),
     }
 }
 
@@ -223,7 +224,7 @@ pub fn unpack_fixext16<R: io::Read>(reader: &mut R) -> Result<(i8, [u8; 16]), Un
             read_fixext_data(reader, &mut buf)?;
             Ok((id, buf))
         }
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(e, "fixext16 header".to_string())),
     }
 }
 
@@ -237,7 +238,7 @@ pub fn unpack_ext_header<R: io::Read>(reader: &mut R) -> Result<(u32, i8), Unpac
         Code::Ext8 => read_data_u8(reader).map(u32::from)?,
         Code::Ext16 => read_data_u16(reader).map(u32::from)?,
         Code::Ext32 => read_data_u32(reader)?,
-        v => return Err(UnpackError::TypeMismatch(v)),
+        e => return Err(UnpackError::TypeMismatch(e, "ext header".to_string())),
     };
     let ty = read_data_i8(reader)?;
     Ok((len, ty))
@@ -256,7 +257,10 @@ pub fn unpack_timestamp32<R: io::Read>(reader: &mut R) -> Result<(u32), UnpackEr
                 )))
             }
         }
-        v => Err(UnpackError::TypeMismatch(v)),
+        e => Err(UnpackError::TypeMismatch(
+            e,
+            "timestamp32 header".to_string(),
+        )),
     }
 }
 
@@ -279,7 +283,10 @@ pub fn unpack_timestamp64<R: io::Read>(reader: &mut R) -> Result<(u64, u32), Unp
                 )))
             }
         }
-        v => Err(UnpackError::TypeMismatch(v)),
+        v => Err(UnpackError::TypeMismatch(
+            v,
+            "timestamp64 header".to_string(),
+        )),
     }
 }
 
@@ -299,6 +306,9 @@ pub fn unpack_timestamp96<R: io::Read>(reader: &mut R) -> Result<(i64, u32), Unp
                 )))
             }
         }
-        v => Err(UnpackError::TypeMismatch(v)),
+        v => Err(UnpackError::TypeMismatch(
+            v,
+            "timestamp96 header".to_string(),
+        )),
     }
 }
