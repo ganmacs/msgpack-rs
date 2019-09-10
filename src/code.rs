@@ -77,8 +77,6 @@ pub enum Code {
     Reserved,
 }
 
-use crate::unpack_error::UnpackError;
-
 impl Code {
     pub fn to_u8(&self) -> u8 {
         match self {

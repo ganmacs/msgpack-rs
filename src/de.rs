@@ -13,6 +13,7 @@ use std::fmt::{self, Display};
 
 #[derive(Debug)]
 pub enum DeError {
+    InvalidSize,
     UnpackError(unpack_error::UnpackError),
     Custom(String),
 }
@@ -34,6 +35,7 @@ impl error::Error for DeError {
         use DeError::*;
 
         match *self {
+            InvalidSize => "invalid size",
             UnpackError(ref e) => e.description(),
             Custom(ref s) => s,
         }
@@ -45,6 +47,7 @@ impl error::Error for DeError {
         match *self {
             UnpackError(ref e) => Some(e),
             Custom(_) => None,
+            InvalidSize => None,
         }
     }
 }
@@ -80,12 +83,118 @@ impl<R: io::Read> io::Read for PeekReader<R> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         if let Some(ref v) = self.code {
             buf[0] = v.to_u8();
-            self.reader.read(&mut buf[1..])
+            if buf.len() > 1 {
+                self.reader.read(&mut buf[1..])
+            } else {
+                Ok(1)
+            }
         } else {
             self.reader.read(buf)
         }
     }
 }
+
+impl<'a, R: BufferedRead<'a>> BufferedRead<'a> for PeekReader<R> {
+    fn fill_buf(&self) -> io::Result<&'a [u8]> {
+        self.reader.fill_buf()
+    }
+
+    fn consume(&mut self, len: usize) {
+        self.reader.consume(len)
+    }
+}
+
+struct SeqAccess<'a, R: io::Read + 'a> {
+    de: &'a mut Deserializer<R>,
+    len: usize,
+}
+
+impl<'de, 'a, R> serde::de::SeqAccess<'de> for SeqAccess<'a, R>
+where
+    R: BufferedRead<'de> + 'a,
+{
+    type Error = DeError;
+
+    fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>, Self::Error>
+    where
+        T: serde::de::DeserializeSeed<'de>,
+    {
+        if self.len > 0 {
+            self.len -= 1;
+            Ok(Some(seed.deserialize(&mut *self.de)?))
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn size_hint(&self) -> Option<usize> {
+        Some(self.len)
+    }
+}
+
+struct MapAccess<'a, R: 'a> {
+    de: &'a mut Deserializer<R>,
+    len: usize,
+}
+
+impl<'de, 'a, R> de::MapAccess<'de> for MapAccess<'a, R>
+where
+    R: BufferedRead<'de> + 'a,
+{
+    type Error = DeError;
+
+    fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>, Self::Error>
+    where
+        K: DeserializeSeed<'de>,
+    {
+        if self.len > 0 {
+            self.len -= 1;
+            Ok(Some(seed.deserialize(&mut *self.de)?))
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn next_value_seed<V>(&mut self, seed: V) -> Result<V::Value, Self::Error>
+    where
+        V: DeserializeSeed<'de>,
+    {
+        Ok(seed.deserialize(&mut *self.de)?)
+    }
+
+    fn size_hint(&self) -> Option<usize> {
+        Some(self.len)
+    }
+}
+
+// struct BytesAccess<'a, R: io::Read + 'a> {
+//     de: &'a mut Deserializer<R>,
+//     len: usize,
+// }
+
+// impl<'de, 'a, R> serde::de::SeqAccess<'de> for BytesAccess<'a, R>
+// where
+//     R: BufferedRead<'de> + 'a,
+// {
+//     type Error = DeError;
+
+//     fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>, Self::Error>
+//     where
+//         T: serde::de::DeserializeSeed<'de>,
+//     {
+//         if self.len > 0 {
+//             self.len -= 1;
+//       // seed.deserialize(MapKey { de: &mut *self.de }).map(Some),
+//             Ok(Some(seed.deserialize(&mut *self.de)?))
+//         } else {
+//             Ok(None)
+//         }
+//     }
+
+//     fn size_hint(&self) -> Option<usize> {
+//         Some(self.len)
+//     }
+// }
 
 pub struct Deserializer<R> {
     reader: PeekReader<R>,
@@ -129,79 +238,45 @@ where
     impl_nums!(deserialize_i16, visit_i16, unpack_i16);
     impl_nums!(deserialize_i32, visit_i32, unpack_i32);
     impl_nums!(deserialize_i64, visit_i64, unpack_i64);
+    impl_nums!(deserialize_f32, visit_f32, unpack_f32);
+    impl_nums!(deserialize_f64, visit_f64, unpack_f64);
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        visitor.visit_none()
-        // let marker = match self.marker.take() {
-        //     Some(marker) => marker,
-        //     None => rmp::decode::read_marker(&mut self.rd)?,
-        // };
+        use code::Code;
 
-        // match marker {
-        //     Marker::Null => visitor.visit_unit(),
-        //     Marker::True => visitor.visit_bool(true),
-        //     Marker::False => visitor.visit_bool(false),
-        //     Marker::FixPos(val) => visitor.visit_u8(val),
-        //     Marker::FixNeg(val) => visitor.visit_i8(val),
-        //     Marker::U8 => visitor.visit_u8(rmp::decode::read_data_u8(&mut self.rd)?),
-        //     Marker::U16 => visitor.visit_u16(rmp::decode::read_data_u16(&mut self.rd)?),
-        //     Marker::U32 => visitor.visit_u32(rmp::decode::read_data_u32(&mut self.rd)?),
-        //     Marker::U64 => visitor.visit_u64(rmp::decode::read_data_u64(&mut self.rd)?),
-        //     Marker::I8 => visitor.visit_i8(rmp::decode::read_data_i8(&mut self.rd)?),
-        //     Marker::I16 => visitor.visit_i16(rmp::decode::read_data_i16(&mut self.rd)?),
-        //     Marker::I32 => visitor.visit_i32(rmp::decode::read_data_i32(&mut self.rd)?),
-        //     Marker::I64 => visitor.visit_i64(rmp::decode::read_data_i64(&mut self.rd)?),
-        //     Marker::F32 => visitor.visit_f32(rmp::decode::read_data_f32(&mut self.rd)?),
-        //     Marker::F64 => visitor.visit_f64(rmp::decode::read_data_f64(&mut self.rd)?),
-        //     Marker::FixStr(len) => self.read_str_data(len as u32, visitor),
-        //     Marker::Str8 => {
-        //         let len = read_u8(&mut self.rd)?;
-        //         self.read_str_data(len as u32, visitor)
-        //     }
-        //     Marker::Str16 => {
-        //         let len = read_u16(&mut self.rd)?;
-        //         self.read_str_data(len as u32, visitor)
-        //     }
-        //     Marker::Str32 => {
-        //         let len = read_u32(&mut self.rd)?;
-        //         self.read_str_data(len as u32, visitor)
-        //     }
-        //     Marker::FixArray(len) => self.read_array(len as u32, visitor),
-        //     Marker::Array16 => {
-        //         let len = read_u16(&mut self.rd)?;
-        //         self.read_array(len as u32, visitor)
-        //     }
-        //     Marker::Array32 => {
-        //         let len = read_u32(&mut self.rd)?;
-        //         self.read_array(len, visitor)
-        //     }
-        //     Marker::FixMap(len) => self.read_map(len as u32, visitor),
-        //     Marker::Map16 => {
-        //         let len = read_u16(&mut self.rd)?;
-        //         self.read_map(len as u32, visitor)
-        //     }
-        //     Marker::Map32 => {
-        //         let len = read_u32(&mut self.rd)?;
-        //         self.read_map(len, visitor)
-        //     }
-        //     Marker::Bin8 => {
-        //         let len = read_u8(&mut self.rd)?;
-        //         self.read_bytes(len as u32, visitor)
-        //     }
-        //     Marker::Bin16 => {
-        //         let len = read_u16(&mut self.rd)?;
-        //         self.read_bytes(len as u32, visitor)
-        //     }
-        //     Marker::Bin32 => {
-        //         let len = read_u32(&mut self.rd)?;
-        //         self.read_bytes(len, visitor)
-        //     }
-        //     Marker::Reserved => Err(Error::TypeMismatch(Marker::Reserved)),
-        //     marker => Err(Error::TypeMismatch(marker)),
-        // }
+        match self.reader.peek_code()? {
+            Code::Nil => self.deserialize_unit(visitor),
+            Code::True | Code::False => self.deserialize_bool(visitor),
+            Code::Uint8 | Code::PosInt(_) => self.deserialize_u8(visitor),
+            Code::Uint16 => self.deserialize_u16(visitor),
+            Code::Uint32 => self.deserialize_u32(visitor),
+            Code::Uint64 => self.deserialize_u64(visitor),
+            Code::Int8 | Code::NegInt(_) => self.deserialize_i8(visitor),
+            Code::Int16 => self.deserialize_i16(visitor),
+            Code::Int32 => self.deserialize_i32(visitor),
+            Code::Int64 => self.deserialize_i64(visitor),
+            Code::Float32 => self.deserialize_f32(visitor),
+            Code::Float64 => self.deserialize_f64(visitor),
+            Code::FixStr(_) | Code::Str8 | Code::Str16 | Code::Str32 => {
+                self.deserialize_string(visitor)
+            }
+            Code::Bin8 | Code::Bin16 | Code::Bin32 => self.deserialize_bytes(visitor),
+            Code::FixArray(_) | Code::Array16 | Code::Array32 => self.deserialize_seq(visitor),
+            Code::FixMap(_) | Code::Map16 | Code::Map32 => self.deserialize_map(visitor),
+            // Code::FixExt1 => FIXEXT1,
+            // Code::FixExt2 => FIXEXT2,
+            // Code::FixExt4 => FIXEXT4,
+            // Code::FixExt8 => FIXEXT8,
+            // Code::FixExt16 => FIXEXT16,
+            // Code::Ext8 => EXT8,
+            // Code::Ext16 => EXT16,
+            // Code::Ext32 => EXT32,
+            Code::Reserved => unreachable!(), // tmp
+            _ => unreachable!(),
+        }
     }
 
     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -261,10 +336,132 @@ where
         }
     }
 
-    forward_to_deserialize_any! {
-         f32 f64 char
-        str string bytes byte_buf unit seq map
-        tuple_struct struct identifier tuple
-        ignored_any
+    fn deserialize_seq<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        let size = unpack::unpack_ary_header(&mut self.reader)?;
+
+        visitor.visit_seq(SeqAccess {
+            de: self,
+            len: size,
+        })
+    }
+
+    fn deserialize_tuple<V>(self, len: usize, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        let size = unpack::unpack_ary_header(&mut self.reader)?;
+        if size != len {
+            return Err(Self::Error::InvalidSize);
+        }
+
+        visitor.visit_seq(SeqAccess {
+            de: self,
+            len: size,
+        })
+    }
+
+    fn deserialize_tuple_struct<V>(
+        self,
+        _name: &'static str,
+        len: usize,
+        visitor: V,
+    ) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        self.deserialize_tuple(len, visitor)
+    }
+
+    fn deserialize_unit<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        visitor.visit_unit()
+    }
+
+    fn deserialize_string<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        let body = unpack::unpack_str(&mut self.reader)?;
+        // TODO: bytes
+        visitor.visit_string(body)
+    }
+
+    fn deserialize_str<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        let body = unpack::unpack_str_ref(&mut self.reader)?;
+        // TODO: bytes_ref
+        visitor.visit_str(body)
+    }
+
+    fn deserialize_struct<V>(
+        self,
+        _name: &str,
+        fields: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        // TODO
+        let _size = unpack::unpack_map_header(&mut self.reader)?;
+        visitor.visit_map(MapAccess {
+            de: self,
+            len: fields.len(),
+        })
+    }
+
+    fn deserialize_map<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        let size = unpack::unpack_map_header(&mut self.reader)?;
+        visitor.visit_map(MapAccess {
+            de: self,
+            len: size,
+        })
+    }
+
+    fn deserialize_identifier<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: de::Visitor<'de>,
+    {
+        self.deserialize_str(visitor)
+    }
+
+    fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        let body = unpack::unpack_bin_ref(&mut self.reader)?;
+        visitor.visit_bytes(body)
+    }
+
+    fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        let body = unpack::unpack_bin(&mut self.reader)?;
+        visitor.visit_byte_buf(body)
+    }
+
+    fn deserialize_char<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: de::Visitor<'de>,
+    {
+        self.deserialize_str(visitor)
+    }
+
+    fn deserialize_ignored_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: de::Visitor<'de>,
+    {
+        visitor.visit_unit()
     }
 }

@@ -112,6 +112,13 @@ where
     ref_value::unpack_bin(reader)
 }
 
+pub fn unpack_bin<'a, R>(reader: &mut R) -> Result<Vec<u8>, UnpackError>
+where
+    R: BufferedRead<'a>,
+{
+    value::unpack_bin(reader)
+}
+
 pub fn unpack_str<R: io::Read>(reader: &mut R) -> Result<String, UnpackError> {
     let len = unpack_str_header(reader)?;
     let buf = value::unpack_str_data(reader, len)?;

@@ -1,5 +1,5 @@
 use crate::primitive::*;
-use crate::{code, value, value::Value, UnpackError};
+use crate::{code, unpack, value, value::Value, UnpackError};
 use std::io;
 
 pub fn unpack_bin_data<R: io::Read>(reader: &mut R, len: usize) -> Result<Vec<u8>, UnpackError> {
@@ -44,6 +44,14 @@ fn unpack_ext_type_data<R: io::Read>(
     let ty = read_data_i8(reader)?;
     let vec = unpack_bin_data(reader, len)?;
     Ok((ty, vec))
+}
+
+pub fn unpack_bin<R>(reader: &mut R) -> Result<Vec<u8>, UnpackError>
+where
+    R: io::Read,
+{
+    let len = unpack::unpack_bin_header(reader)?;
+    unpack_bin_data(reader, len)
 }
 
 pub fn unpack_value<R>(reader: &mut R) -> Result<Value, UnpackError>
