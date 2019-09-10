@@ -10,7 +10,7 @@ edition = "2018"
 [dependencies]
 
 byteorder = "1"
-bytes = { git = "https://github.com/tokio-rs/bytes" }
+bytes = "0.4.12"
 chrono = "0.4"
 serde = "1.0.99"
 

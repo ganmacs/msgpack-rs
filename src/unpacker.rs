@@ -63,7 +63,7 @@ impl io::Read for InnerBuf {
         }
 
         let len = cmp::min(self.0.get_ref().len(), buf.len());
-        Buf::copy_to_slice(&mut self.0.get_mut(), &mut buf[0..len]);
+        Buf::copy_to_slice(&mut self.0, &mut buf[0..len]);
         Ok(len)
     }
 }
