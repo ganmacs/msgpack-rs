@@ -82,7 +82,7 @@ impl<R: io::Read> PeekReader<R> {
 impl<R: io::Read> io::Read for PeekReader<R> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         if let Some(ref v) = self.code {
-            buf[0] = v.to_u8();
+            buf[0] = u8::from(v);
             if buf.len() > 1 {
                 self.reader.read(&mut buf[1..])
             } else {

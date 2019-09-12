@@ -7,6 +7,15 @@ use std::io::Write;
 use crate::{pack, packer};
 use error::SerError;
 
+macro_rules! delegate_impl {
+    ($ser_method:ident, $pack_method:ident, $typ:ty) => {
+        #[inline]
+        fn $ser_method(self, v: $typ) -> Result<Self::Ok, Self::Error> {
+            pack::$pack_method(&mut self.wr, v).map_err(Self::Error::from)
+        }
+    }
+}
+
 impl<'a, W> serde::Serializer for &'a mut packer::Packer<W>
 where
     W: Write,
@@ -22,61 +31,23 @@ where
     type SerializeStruct = Compound<'a, W>;
     type SerializeStructVariant = Compound<'a, W>;
 
-    fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
-        pack::pack_bool(&mut self.wr, v).map_err(Self::Error::from)
-    }
-
-    fn serialize_i8(self, v: i8) -> Result<Self::Ok, Self::Error> {
-        pack::pack_from_i8(&mut self.wr, v).map_err(Self::Error::from)
-    }
-
-    fn serialize_i16(self, v: i16) -> Result<Self::Ok, Self::Error> {
-        pack::pack_from_i16(&mut self.wr, v).map_err(Self::Error::from)
-    }
-
-    fn serialize_i32(self, v: i32) -> Result<Self::Ok, Self::Error> {
-        pack::pack_from_i32(&mut self.wr, v).map_err(Self::Error::from)
-    }
-
-    fn serialize_i64(self, v: i64) -> Result<Self::Ok, Self::Error> {
-        pack::pack_from_i64(&mut self.wr, v).map_err(Self::Error::from)
-    }
-
-    fn serialize_u8(self, v: u8) -> Result<Self::Ok, Self::Error> {
-        pack::pack_from_u8(&mut self.wr, v).map_err(Self::Error::from)
-    }
-
-    fn serialize_u16(self, v: u16) -> Result<Self::Ok, Self::Error> {
-        pack::pack_from_u16(&mut self.wr, v).map_err(Self::Error::from)
-    }
-
-    fn serialize_u32(self, v: u32) -> Result<Self::Ok, Self::Error> {
-        pack::pack_from_u32(&mut self.wr, v).map_err(Self::Error::from)
-    }
-
-    fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
-        pack::pack_from_u64(&mut self.wr, v).map_err(Self::Error::from)
-    }
-
-    fn serialize_f32(self, v: f32) -> Result<Self::Ok, Self::Error> {
-        pack::pack_f32(&mut self.wr, v).map_err(Self::Error::from)
-    }
-
-    fn serialize_f64(self, v: f64) -> Result<Self::Ok, Self::Error> {
-        pack::pack_f64(&mut self.wr, v).map_err(Self::Error::from)
-    }
+    delegate_impl!(serialize_i8, pack_from_i8, i8);
+    delegate_impl!(serialize_i16, pack_from_i16, i16);
+    delegate_impl!(serialize_i32, pack_from_i32, i32);
+    delegate_impl!(serialize_i64, pack_from_i64, i64);
+    delegate_impl!(serialize_u8, pack_from_u8, u8);
+    delegate_impl!(serialize_u16, pack_from_u16, u16);
+    delegate_impl!(serialize_u32, pack_from_u32, u32);
+    delegate_impl!(serialize_u64, pack_from_u64, u64);
+    delegate_impl!(serialize_bool, pack_bool, bool);
+    delegate_impl!(serialize_f32, pack_f32, f32);
+    delegate_impl!(serialize_f64, pack_f64, f64);
+    delegate_impl!(serialize_str, pack_str, &str);
+    delegate_impl!(serialize_bytes, pack_bin, &[u8]);
 
     fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
         let mut buf = [0; 4];
         self.serialize_str(v.encode_utf8(&mut buf))
-    }
-
-    fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
-        pack::pack_str(&mut self.wr, v).map_err(Self::Error::from)
-    }
-
-    fn serialize_bytes(self, value: &[u8]) -> Result<Self::Ok, Self::Error> {
-        pack::pack_bin(&mut self.wr, value).map_err(Self::Error::from)
     }
 
     fn serialize_none(self) -> Result<(), Self::Error> {

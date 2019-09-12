@@ -1,4 +1,3 @@
-// value of code
 pub const POS_INT: u8 = 0x00;
 pub const NIL: u8 = 0xc0;
 pub const FALSE: u8 = 0xc2;
@@ -77,50 +76,8 @@ pub enum Code {
     Reserved,
 }
 
-impl Code {
-    pub fn to_u8(&self) -> u8 {
-        match self {
-            Code::Nil => NIL,
-            Code::True => TRUE,
-            Code::False => FALSE,
-            Code::PosInt(v) => POS_INT + v,
-            Code::NegInt(v) => NEG_INT + (*v as u8),
-            Code::Uint8 => UINT8,
-            Code::Uint16 => UINT16,
-            Code::Uint32 => UINT32,
-            Code::Uint64 => UINT64,
-            Code::Int8 => INT8,
-            Code::Int16 => INT16,
-            Code::Int32 => INT32,
-            Code::Int64 => INT64,
-            Code::Float32 => FLOAT32,
-            Code::Float64 => FLOAT64,
-            Code::FixStr(v) => FIX_STR + v,
-            Code::Str8 => STR8,
-            Code::Str16 => STR16,
-            Code::Str32 => STR32,
-            Code::Bin8 => BIN8,
-            Code::Bin16 => BIN16,
-            Code::Bin32 => BIN32,
-            Code::FixArray(v) => FIX_ARRAY + v,
-            Code::Array16 => ARRAY16,
-            Code::Array32 => ARRAY32,
-            Code::FixMap(v) => FIX_MAP + v,
-            Code::Map16 => MAP16,
-            Code::Map32 => MAP32,
-            Code::FixExt1 => FIXEXT1,
-            Code::FixExt2 => FIXEXT2,
-            Code::FixExt4 => FIXEXT4,
-            Code::FixExt8 => FIXEXT8,
-            Code::FixExt16 => FIXEXT16,
-            Code::Ext8 => EXT8,
-            Code::Ext16 => EXT16,
-            Code::Ext32 => EXT32,
-            Code::Reserved => unreachable!(), // tmp
-        }
-    }
-
-    fn from_u8(v: u8) -> Self {
+impl From<u8> for Code {
+    fn from(v: u8) -> Self {
         match v {
             0x00..=0x7f => Code::PosInt(v),
             0x80..=0x8f => Code::FixMap(v - 0x80),
@@ -163,8 +120,46 @@ impl Code {
     }
 }
 
-impl From<u8> for Code {
-    fn from(v: u8) -> Self {
-        Code::from_u8(v)
+impl From<&Code> for u8 {
+    fn from(v: &Code) -> Self {
+        match v {
+            Code::Nil => NIL,
+            Code::True => TRUE,
+            Code::False => FALSE,
+            Code::PosInt(v) => POS_INT + v,
+            Code::NegInt(v) => NEG_INT + (*v as u8),
+            Code::Uint8 => UINT8,
+            Code::Uint16 => UINT16,
+            Code::Uint32 => UINT32,
+            Code::Uint64 => UINT64,
+            Code::Int8 => INT8,
+            Code::Int16 => INT16,
+            Code::Int32 => INT32,
+            Code::Int64 => INT64,
+            Code::Float32 => FLOAT32,
+            Code::Float64 => FLOAT64,
+            Code::FixStr(v) => FIX_STR + v,
+            Code::Str8 => STR8,
+            Code::Str16 => STR16,
+            Code::Str32 => STR32,
+            Code::Bin8 => BIN8,
+            Code::Bin16 => BIN16,
+            Code::Bin32 => BIN32,
+            Code::FixArray(v) => FIX_ARRAY + v,
+            Code::Array16 => ARRAY16,
+            Code::Array32 => ARRAY32,
+            Code::FixMap(v) => FIX_MAP + v,
+            Code::Map16 => MAP16,
+            Code::Map32 => MAP32,
+            Code::FixExt1 => FIXEXT1,
+            Code::FixExt2 => FIXEXT2,
+            Code::FixExt4 => FIXEXT4,
+            Code::FixExt8 => FIXEXT8,
+            Code::FixExt16 => FIXEXT16,
+            Code::Ext8 => EXT8,
+            Code::Ext16 => EXT16,
+            Code::Ext32 => EXT32,
+            Code::Reserved => unreachable!(), // tmp
+        }
     }
 }

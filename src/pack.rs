@@ -45,7 +45,7 @@ pub fn pack_str<W: io::Write>(writer: &mut W, v: &str) -> Result<(), PackError> 
     } else if len < STR8_LIMIT {
         write_data_u8(writer, code::STR8)?;
         write_data_u8(writer, len as u8)?;
-        write_all(writer, v[..len].as_bytes())
+        write_all(writer, &v[..len].as_bytes())
     } else if len < STR16_LIMIT {
         write_data_u8(writer, code::STR16)?;
         write_data_u16(writer, len as u16)?;
