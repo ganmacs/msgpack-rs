@@ -1,4 +1,4 @@
-use crate::primitive::*;
+use crate::unpack::primitive::*;
 use crate::{code, unpack, value, value::Value, UnpackError};
 use std::io;
 
@@ -9,7 +9,10 @@ pub fn unpack_bin_data<R: io::Read>(reader: &mut R, len: usize) -> Result<Vec<u8
     Ok(buf)
 }
 
-pub fn unpack_array_data<R: io::Read>(reader: &mut R, len: usize) -> Result<Vec<Value>, UnpackError> {
+pub fn unpack_array_data<R: io::Read>(
+    reader: &mut R,
+    len: usize,
+) -> Result<Vec<Value>, UnpackError> {
     let mut vec = Vec::with_capacity(len);
     for _ in 0..len {
         vec.push(unpack_value(reader)?);

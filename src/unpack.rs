@@ -1,12 +1,13 @@
+mod primitive;
 pub mod ref_value;
 mod value;
 
-use crate::primitive::*;
 use crate::BufferedRead;
 use crate::{code::Code, unpack_error::UnpackError};
+use primitive::*;
 use std::io::{self, ErrorKind};
 
-pub use crate::primitive::read_code;
+pub use primitive::read_code;
 pub use value::*;
 
 pub fn unpack_u8<R: io::Read>(reader: &mut R) -> Result<u8, UnpackError> {

@@ -1,10 +1,13 @@
-use crate::primitive::*;
+use crate::unpack::primitive::*;
 use crate::value;
 use crate::{code, unpack, value::RefValue, BufferedRead, UnpackError};
 
 use std::io::{self, ErrorKind};
 
-pub fn unpack_array_data<'a, R>(reader: &mut R, len: usize) -> Result<Vec<RefValue<'a>>, UnpackError>
+pub fn unpack_array_data<'a, R>(
+    reader: &mut R,
+    len: usize,
+) -> Result<Vec<RefValue<'a>>, UnpackError>
 where
     R: BufferedRead<'a>,
 {

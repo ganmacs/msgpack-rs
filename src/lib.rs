@@ -3,7 +3,6 @@ pub mod de;
 pub mod pack;
 mod pack_error;
 mod packer;
-pub mod primitive;
 mod ser;
 pub mod unpack;
 mod unpack_error;
