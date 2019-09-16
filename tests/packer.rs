@@ -10,7 +10,7 @@ fn packer() {
     packer.pack_uint(1).unwrap();
     packer.pack_int(-1).unwrap();
 
-    packer.pack_ary_header(2).unwrap();
+    packer.pack_array_header(2).unwrap();
     packer.pack_uint(1).unwrap();
     packer.pack_uint(2).unwrap();
 

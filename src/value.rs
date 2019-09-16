@@ -220,7 +220,7 @@ impl Value {
         }
     }
 
-    pub fn to_ary(&self) -> Option<&Vec<Value>> {
+    pub fn to_array(&self) -> Option<&Vec<Value>> {
         match self {
             Value::Array(v) => Some(v),
             _ => None,
@@ -255,7 +255,7 @@ impl<'a> RefValue<'a> {
         }
     }
 
-    pub fn to_ary(&self) -> Option<&Vec<RefValue>> {
+    pub fn to_array(&self) -> Option<&Vec<RefValue>> {
         match self {
             RefValue::Array(v) => Some(v),
             _ => None,

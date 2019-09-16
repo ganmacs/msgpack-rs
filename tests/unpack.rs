@@ -149,7 +149,7 @@ fn unpack_str() {
 #[test]
 fn unpack_fixary() {
     let mut reader = io::Cursor::new(&[0x92, 0x01, 0x02]);
-    assert_eq!(msgpack::unpack_ary_header(&mut reader).unwrap(), 2);
+    assert_eq!(msgpack::unpack_array_header(&mut reader).unwrap(), 2);
     assert_eq!(msgpack::unpack_u8(&mut reader).unwrap(), 1);
     assert_eq!(msgpack::unpack_u8(&mut reader).unwrap(), 2);
 }

@@ -4,7 +4,7 @@ use crate::{code, unpack, value::RefValue, BufferedRead, UnpackError};
 
 use std::io::{self, ErrorKind};
 
-pub fn unpack_ary_data<'a, R>(reader: &mut R, len: usize) -> Result<Vec<RefValue<'a>>, UnpackError>
+pub fn unpack_array_data<'a, R>(reader: &mut R, len: usize) -> Result<Vec<RefValue<'a>>, UnpackError>
 where
     R: BufferedRead<'a>,
 {
@@ -16,12 +16,12 @@ where
     Ok(vec)
 }
 
-pub fn unpack_ary<'a, R>(reader: &mut R) -> Result<Vec<RefValue<'a>>, UnpackError>
+pub fn unpack_array<'a, R>(reader: &mut R) -> Result<Vec<RefValue<'a>>, UnpackError>
 where
     R: BufferedRead<'a>,
 {
-    let len = unpack::unpack_ary_header(reader)?;
-    unpack_ary_data(reader, len)
+    let len = unpack::unpack_array_header(reader)?;
+    unpack_array_data(reader, len)
 }
 
 pub fn unpack_map_data<'a, R>(
@@ -166,14 +166,14 @@ where
             let len = read_data_u32(reader)? as usize;
             RefValue::Binary(unpack_bin_data(reader, len)?)
         }
-        Code::FixArray(len) => RefValue::Array(unpack_ary_data(reader, len as usize)?),
+        Code::FixArray(len) => RefValue::Array(unpack_array_data(reader, len as usize)?),
         Code::Array16 => {
             let len = usize::from(read_data_u16(reader)?);
-            RefValue::Array(unpack_ary_data(reader, len)?)
+            RefValue::Array(unpack_array_data(reader, len)?)
         }
         Code::Array32 => {
             let len = read_data_u32(reader)? as usize;
-            RefValue::Array(unpack_ary_data(reader, len)?)
+            RefValue::Array(unpack_array_data(reader, len)?)
         }
         Code::FixMap(len) => RefValue::Map(unpack_map_data(reader, len as usize)?),
         Code::Map16 => {

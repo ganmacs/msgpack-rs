@@ -109,7 +109,7 @@ const FIXARRAY_LIMIT: usize = 1 << 4;
 const ARRAY16_LIMIT: usize = 1 << 16;
 const ARRAY32_LIMIT: usize = 1 << 32;
 
-pub fn pack_ary_header<W: io::Write>(writer: &mut W, len: usize) -> Result<(), PackError> {
+pub fn pack_array_header<W: io::Write>(writer: &mut W, len: usize) -> Result<(), PackError> {
     if len < FIXARRAY_LIMIT {
         write_data_u8(writer, code::FIX_ARRAY | (len as u8))
     } else if len < ARRAY16_LIMIT {

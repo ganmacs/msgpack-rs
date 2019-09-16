@@ -154,7 +154,7 @@ pub fn unpack_str_header<R: io::Read>(reader: &mut R) -> Result<usize, UnpackErr
     }
 }
 
-pub fn unpack_ary_header<R: io::Read>(reader: &mut R) -> Result<usize, UnpackError> {
+pub fn unpack_array_header<R: io::Read>(reader: &mut R) -> Result<usize, UnpackError> {
     match read_code(reader)? {
         Code::FixArray(v) => Ok(usize::from(v)),
         Code::Array16 => read_data_u16(reader).map(usize::from),

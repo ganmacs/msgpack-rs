@@ -363,7 +363,7 @@ fn pack_bin() {
 #[test]
 fn pack_fixary() {
     let mut writer = vec![];
-    msgpack::pack_ary_header(&mut writer, 2).unwrap();
+    msgpack::pack_array_header(&mut writer, 2).unwrap();
     msgpack::pack_from_u8(&mut writer, 1).unwrap();
     msgpack::pack_from_u8(&mut writer, 2).unwrap();
 
@@ -371,9 +371,9 @@ fn pack_fixary() {
 }
 
 #[test]
-fn pack_ary16() {
+fn pack_array16() {
     let mut writer = vec![];
-    msgpack::pack_ary_header(&mut writer, (1 << 16) - 1).unwrap();
+    msgpack::pack_array_header(&mut writer, (1 << 16) - 1).unwrap();
     for _ in 0..(1 << 16) {
         msgpack::pack_from_u8(&mut writer, 5 as u8).unwrap();
     }

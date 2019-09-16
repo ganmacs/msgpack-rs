@@ -216,8 +216,8 @@ impl<R: io::Read> Unpacker<R> {
         unpack::unpack_str_header(&mut self.inner)
     }
 
-    pub fn unpack_ary_header(&mut self) -> Result<usize, UnpackError> {
-        unpack::unpack_ary_header(&mut self.inner)
+    pub fn unpack_array_header(&mut self) -> Result<usize, UnpackError> {
+        unpack::unpack_array_header(&mut self.inner)
     }
 
     pub fn unpack_map_header(&mut self) -> Result<usize, UnpackError> {

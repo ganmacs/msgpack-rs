@@ -9,7 +9,7 @@ pub fn unpack_bin_data<R: io::Read>(reader: &mut R, len: usize) -> Result<Vec<u8
     Ok(buf)
 }
 
-pub fn unpack_ary_data<R: io::Read>(reader: &mut R, len: usize) -> Result<Vec<Value>, UnpackError> {
+pub fn unpack_array_data<R: io::Read>(reader: &mut R, len: usize) -> Result<Vec<Value>, UnpackError> {
     let mut vec = Vec::with_capacity(len);
     for _ in 0..len {
         vec.push(unpack_value(reader)?);
@@ -100,14 +100,14 @@ where
             let len = read_data_u32(reader)?;
             Value::String(unpack_str_data(reader, len as usize)?)
         }
-        Code::FixArray(len) => Value::Array(unpack_ary_data(reader, len as usize)?),
+        Code::FixArray(len) => Value::Array(unpack_array_data(reader, len as usize)?),
         Code::Array16 => {
             let len = usize::from(read_data_u16(reader)?);
-            Value::Array(unpack_ary_data(reader, len)?)
+            Value::Array(unpack_array_data(reader, len)?)
         }
         Code::Array32 => {
             let len = read_data_u32(reader)? as usize;
-            Value::Array(unpack_ary_data(reader, len)?)
+            Value::Array(unpack_array_data(reader, len)?)
         }
         Code::FixMap(len) => Value::Map(unpack_map_data(reader, len as usize)?),
         Code::Map16 => {

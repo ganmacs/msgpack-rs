@@ -63,7 +63,7 @@ where
     }
 
     fn serialize_unit_struct(self, _name: &'static str) -> Result<Self::Ok, Self::Error> {
-        pack::pack_ary_header(&mut self.wr, 0).map_err(Self::Error::from)
+        pack::pack_array_header(&mut self.wr, 0).map_err(Self::Error::from)
     }
 
     fn serialize_unit_variant(
@@ -101,7 +101,7 @@ where
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
         match len {
             Some(len) => {
-                pack::pack_ary_header(&mut self.wr, len)?;
+                pack::pack_array_header(&mut self.wr, len)?;
                 Ok(self.compound())
             }
             None => Err(error::SerError::MustHaveLength),

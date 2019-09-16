@@ -89,8 +89,8 @@ impl<W: io::Write> Packer<W> {
         pack::pack_bin(&mut self.wr, v)
     }
 
-    pub fn pack_ary_header(&mut self, len: usize) -> Result<(), PackError> {
-        pack::pack_ary_header(&mut self.wr, len)
+    pub fn pack_array_header(&mut self, len: usize) -> Result<(), PackError> {
+        pack::pack_array_header(&mut self.wr, len)
     }
 
     pub fn pack_map_header(&mut self, len: usize) -> Result<(), PackError> {

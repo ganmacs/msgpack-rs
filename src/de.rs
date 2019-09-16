@@ -340,7 +340,7 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        let size = unpack::unpack_ary_header(&mut self.reader)?;
+        let size = unpack::unpack_array_header(&mut self.reader)?;
 
         visitor.visit_seq(SeqAccess {
             de: self,
@@ -352,7 +352,7 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        let size = unpack::unpack_ary_header(&mut self.reader)?;
+        let size = unpack::unpack_array_header(&mut self.reader)?;
         if size != len {
             return Err(Self::Error::InvalidSize);
         }

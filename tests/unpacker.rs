@@ -14,7 +14,7 @@ fn unpacker() {
     assert_eq!(unpacker.unpack_u8().unwrap(), 1);
     assert_eq!(unpacker.unpack_i8().unwrap(), -1);
 
-    let len = unpacker.unpack_ary_header().unwrap();
+    let len = unpacker.unpack_array_header().unwrap();
     assert_eq!(len, 2);
     assert_eq!(unpacker.unpack_u8().unwrap(), 1);
     assert_eq!(unpacker.unpack_u8().unwrap(), 2);
