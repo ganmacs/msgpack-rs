@@ -81,3 +81,26 @@ pub trait MessagePacker {
     fn write_payload(&mut self, v: &[u8]) -> Result<(), PackError>;
     fn flush(&mut self) -> Result<(), PackError>;
 }
+
+pub trait MessageUnpacker {
+    fn unpack_u8(&mut self) -> Result<u8, UnpackError>;
+    fn unpack_u16(&mut self) -> Result<u16, UnpackError>;
+    fn unpack_u32(&mut self) -> Result<u32, UnpackError>;
+    fn unpack_u64(&mut self) -> Result<u64, UnpackError>;
+    fn unpack_i8(&mut self) -> Result<i8, UnpackError>;
+    fn unpack_i16(&mut self) -> Result<i16, UnpackError>;
+    fn unpack_i32(&mut self) -> Result<i32, UnpackError>;
+    fn unpack_i64(&mut self) -> Result<i64, UnpackError>;
+    fn unpack_nil<T>(&mut self) -> Result<Option<T>, UnpackError>;
+    fn unpack_bool(&mut self) -> Result<bool, UnpackError>;
+    fn unpack_string(&mut self) -> Result<String, UnpackError>;
+    fn unpack_str_header(&mut self) -> Result<usize, UnpackError>;
+    fn unpack_array_header(&mut self) -> Result<usize, UnpackError>;
+    fn unpack_map_header(&mut self) -> Result<usize, UnpackError>;
+    fn unpack_bin_header(&mut self) -> Result<usize, UnpackError>;
+    fn unpack_fixext1(&mut self) -> Result<(i8, u8), UnpackError>;
+    fn unpack_fixext2(&mut self) -> Result<(i8, [u8; 2]), UnpackError>;
+    fn unpack_fixext4(&mut self) -> Result<(i8, [u8; 4]), UnpackError>;
+    fn unpack_fixext8(&mut self) -> Result<(i8, [u8; 8]), UnpackError>;
+    fn unpack_fixext16(&mut self) -> Result<(i8, [u8; 16]), UnpackError>;
+}

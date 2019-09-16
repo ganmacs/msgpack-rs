@@ -1,4 +1,4 @@
-use crate::{unpack, value::RefValue, BufferedRead, UnpackError, Value};
+use crate::{unpack, value::RefValue, BufferedRead, MessageUnpacker, UnpackError, Value};
 
 use std::iter::Iterator;
 use std::{cmp, io};
@@ -168,87 +168,89 @@ where
 // }
 
 impl<R: io::Read> Unpacker<R> {
-    pub fn unpack_u8(&mut self) -> Result<u8, UnpackError> {
+    pub fn unpack_value(&mut self) -> Result<Value, UnpackError> {
+        unpack::unpack_value(&mut self.inner)
+    }
+}
+
+impl<R: io::Read> MessageUnpacker for Unpacker<R> {
+    fn unpack_u8(&mut self) -> Result<u8, UnpackError> {
         unpack::unpack_u8(&mut self.inner)
     }
 
-    pub fn unpack_u16(&mut self) -> Result<u16, UnpackError> {
+    fn unpack_u16(&mut self) -> Result<u16, UnpackError> {
         unpack::unpack_u16(&mut self.inner)
     }
 
-    pub fn unpack_u32(&mut self) -> Result<u32, UnpackError> {
+    fn unpack_u32(&mut self) -> Result<u32, UnpackError> {
         unpack::unpack_u32(&mut self.inner)
     }
 
-    pub fn unpack_u64(&mut self) -> Result<u64, UnpackError> {
+    fn unpack_u64(&mut self) -> Result<u64, UnpackError> {
         unpack::unpack_u64(&mut self.inner)
     }
 
-    pub fn unpack_i8(&mut self) -> Result<i8, UnpackError> {
+    fn unpack_i8(&mut self) -> Result<i8, UnpackError> {
         unpack::unpack_i8(&mut self.inner)
     }
 
-    pub fn unpack_i16(&mut self) -> Result<i16, UnpackError> {
+    fn unpack_i16(&mut self) -> Result<i16, UnpackError> {
         unpack::unpack_i16(&mut self.inner)
     }
 
-    pub fn unpack_i32(&mut self) -> Result<i32, UnpackError> {
+    fn unpack_i32(&mut self) -> Result<i32, UnpackError> {
         unpack::unpack_i32(&mut self.inner)
     }
 
-    pub fn unpack_i64(&mut self) -> Result<i64, UnpackError> {
+    fn unpack_i64(&mut self) -> Result<i64, UnpackError> {
         unpack::unpack_i64(&mut self.inner)
     }
 
-    pub fn unpack_nil<T>(&mut self) -> Result<Option<T>, UnpackError> {
+    fn unpack_nil<T>(&mut self) -> Result<Option<T>, UnpackError> {
         unpack::unpack_nil(&mut self.inner)
     }
 
-    pub fn unpack_bool(&mut self) -> Result<bool, UnpackError> {
+    fn unpack_bool(&mut self) -> Result<bool, UnpackError> {
         unpack::unpack_bool(&mut self.inner)
     }
 
-    pub fn unpack_string(&mut self) -> Result<String, UnpackError> {
+    fn unpack_string(&mut self) -> Result<String, UnpackError> {
         unpack::unpack_str(&mut self.inner)
     }
 
-    pub fn unpack_str_header(&mut self) -> Result<usize, UnpackError> {
+    fn unpack_str_header(&mut self) -> Result<usize, UnpackError> {
         unpack::unpack_str_header(&mut self.inner)
     }
 
-    pub fn unpack_array_header(&mut self) -> Result<usize, UnpackError> {
+    fn unpack_array_header(&mut self) -> Result<usize, UnpackError> {
         unpack::unpack_array_header(&mut self.inner)
     }
 
-    pub fn unpack_map_header(&mut self) -> Result<usize, UnpackError> {
+    fn unpack_map_header(&mut self) -> Result<usize, UnpackError> {
         unpack::unpack_map_header(&mut self.inner)
     }
 
-    pub fn unpack_bin_header(&mut self) -> Result<usize, UnpackError> {
+    fn unpack_bin_header(&mut self) -> Result<usize, UnpackError> {
         unpack::unpack_bin_header(&mut self.inner)
     }
 
-    pub fn unpack_fixext1(&mut self) -> Result<(i8, u8), UnpackError> {
+    fn unpack_fixext1(&mut self) -> Result<(i8, u8), UnpackError> {
         unpack::unpack_fixext1(&mut self.inner)
     }
 
-    pub fn unpack_fixext2(&mut self) -> Result<(i8, [u8; 2]), UnpackError> {
+    fn unpack_fixext2(&mut self) -> Result<(i8, [u8; 2]), UnpackError> {
         unpack::unpack_fixext2(&mut self.inner)
     }
 
-    pub fn unpack_fixext4(&mut self) -> Result<(i8, [u8; 4]), UnpackError> {
+    fn unpack_fixext4(&mut self) -> Result<(i8, [u8; 4]), UnpackError> {
         unpack::unpack_fixext4(&mut self.inner)
     }
 
-    pub fn unpack_fixext8(&mut self) -> Result<(i8, [u8; 8]), UnpackError> {
+    fn unpack_fixext8(&mut self) -> Result<(i8, [u8; 8]), UnpackError> {
         unpack::unpack_fixext8(&mut self.inner)
     }
 
-    pub fn unpack_fixext16(&mut self) -> Result<(i8, [u8; 16]), UnpackError> {
+    fn unpack_fixext16(&mut self) -> Result<(i8, [u8; 16]), UnpackError> {
         unpack::unpack_fixext16(&mut self.inner)
-    }
-
-    pub fn unpack_value(&mut self) -> Result<Value, UnpackError> {
-        unpack::unpack_value(&mut self.inner)
     }
 }
