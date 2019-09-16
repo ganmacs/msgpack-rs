@@ -33,6 +33,11 @@ impl<W: io::Write> Packer<W> {
     pub fn pack_uint(&mut self, v: u64) -> Result<(), PackError> {
         pack::pack_from_u64(&mut self.wr, v)
     }
+
+    pub fn pack_u8(&mut self, v: u8) -> Result<(), PackError> {
+        pack::pack_u8(&mut self.wr, v)
+    }
+
     pub fn pack_from_u8(&mut self, v: u8) -> Result<(), PackError> {
         pack::pack_from_u8(&mut self.wr, v)
     }
@@ -41,12 +46,24 @@ impl<W: io::Write> Packer<W> {
         pack::pack_from_u16(&mut self.wr, v)
     }
 
+    pub fn pack_u16(&mut self, v: u16) -> Result<(), PackError> {
+        pack::pack_u16(&mut self.wr, v)
+    }
+
     pub fn pack_from_u32(&mut self, v: u32) -> Result<(), PackError> {
         pack::pack_from_u32(&mut self.wr, v)
     }
 
+    pub fn pack_u32(&mut self, v: u32) -> Result<(), PackError> {
+        pack::pack_u32(&mut self.wr, v)
+    }
+
     pub fn pack_from_u64(&mut self, v: u64) -> Result<(), PackError> {
         pack::pack_from_u64(&mut self.wr, v)
+    }
+
+    pub fn pack_u64(&mut self, v: u64) -> Result<(), PackError> {
+        pack::pack_u64(&mut self.wr, v)
     }
 
     pub fn pack_int(&mut self, v: i64) -> Result<(), PackError> {
@@ -56,17 +73,32 @@ impl<W: io::Write> Packer<W> {
     pub fn pack_from_i8(&mut self, v: i8) -> Result<(), PackError> {
         pack::pack_from_i8(&mut self.wr, v)
     }
+    pub fn pack_i8(&mut self, v: i8) -> Result<(), PackError> {
+        pack::pack_i8(&mut self.wr, v)
+    }
 
     pub fn pack_from_i16(&mut self, v: i16) -> Result<(), PackError> {
         pack::pack_from_i16(&mut self.wr, v)
+    }
+
+    pub fn pack_i16(&mut self, v: i16) -> Result<(), PackError> {
+        pack::pack_i16(&mut self.wr, v)
     }
 
     pub fn pack_from_i32(&mut self, v: i32) -> Result<(), PackError> {
         pack::pack_from_i32(&mut self.wr, v)
     }
 
+    pub fn pack_i32(&mut self, v: i32) -> Result<(), PackError> {
+        pack::pack_i32(&mut self.wr, v)
+    }
+
     pub fn pack_from_i64(&mut self, v: i64) -> Result<(), PackError> {
         pack::pack_from_i64(&mut self.wr, v)
+    }
+
+    pub fn pack_i64(&mut self, v: i64) -> Result<(), PackError> {
+        pack::pack_i64(&mut self.wr, v)
     }
 
     pub fn pack_f32(&mut self, v: f32) -> Result<(), PackError> {
