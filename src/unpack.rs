@@ -3,7 +3,7 @@ pub mod ref_value;
 mod value;
 
 use crate::BufferedRead;
-use crate::{code::Code, unpack_error::UnpackError};
+use crate::{code::Code, error::UnpackError};
 use primitive::*;
 use std::io::{self, ErrorKind};
 

@@ -1,4 +1,6 @@
 use msgpack;
+
+use msgpack::{MessagePacker, MessageUnpacker};
 use std::io;
 
 #[test]

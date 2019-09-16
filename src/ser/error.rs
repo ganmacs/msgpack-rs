@@ -1,4 +1,4 @@
-use crate::pack_error;
+use crate::error as pack_error;
 
 use std::error;
 use std::fmt::{self, Display};

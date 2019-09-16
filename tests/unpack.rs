@@ -1,4 +1,3 @@
-use msgpack;
 use msgpack::Value;
 use std::io;
 

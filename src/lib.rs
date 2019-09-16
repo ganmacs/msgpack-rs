@@ -1,20 +1,18 @@
 mod code;
 pub mod de;
+mod error;
 pub mod pack;
-mod pack_error;
 mod packer;
 mod ser;
 pub mod unpack;
-mod unpack_error;
 mod unpacker;
 mod value;
 
 pub use byteorder::ReadBytesExt;
+pub use error::{PackError, UnpackError};
 pub use pack::*;
-pub use pack_error::PackError;
 pub use packer::Packer;
 pub use unpack::*;
-pub use unpack_error::UnpackError;
 pub use unpacker::{InnerBuf, RefUnpacker, Unpacker};
 pub use value::{RefValue, Value};
 

@@ -1,6 +1,6 @@
 use crate::code;
+use crate::error as unpack_error;
 use crate::unpack;
-use crate::unpack_error;
 use crate::BufferedRead;
 
 use serde;

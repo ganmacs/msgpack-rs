@@ -1,4 +1,4 @@
-use msgpack::{self, RefUnpacker, RefValue, Value};
+use msgpack::{self, MessageUnpacker, RefUnpacker, RefValue, Value};
 use std::io::{self, Write};
 
 #[test]

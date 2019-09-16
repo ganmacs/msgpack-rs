@@ -3,7 +3,7 @@ use super::{
     pack_array_header, pack_bin, pack_bool, pack_ext_header, pack_f32, pack_f64, pack_from_i64,
     pack_from_u64, pack_map_header, pack_nil, pack_str, pack_str_from_slice, pack_timestamp,
 };
-use crate::pack_error::PackError;
+use crate::PackError;
 
 use crate::value;
 use crate::value::float::{self, Float};
@@ -24,12 +24,10 @@ pub fn pack_value<W: io::Write>(writer: &mut W, val: Value) -> Result<(), PackEr
             float::Number::Float64(v) => pack_f64(writer, v),
         },
         Value::Binary(v) => pack_bin(writer, &v),
-        Value::String(value::Utf8String { ref s }) => {
-            match *s {
-                Ok(ref s) => pack_str(writer, &s.as_str()),
-                Err((ref s, _)) => pack_str_from_slice(writer, s),
-            }
-        }
+        Value::String(value::Utf8String { ref s }) => match *s {
+            Ok(ref s) => pack_str(writer, &s.as_str()),
+            Err((ref s, _)) => pack_str_from_slice(writer, s),
+        },
         Value::Array(vs) => {
             pack_array_header(writer, vs.len())?;
             for v in vs {

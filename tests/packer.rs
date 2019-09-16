@@ -1,4 +1,5 @@
 use msgpack;
+use msgpack::MessagePacker;
 
 #[test]
 fn packer() {
