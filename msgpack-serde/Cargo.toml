@@ -1,0 +1,20 @@
+[lib]
+name = "msgpack_serde"
+
+[package]
+name = "msgpack-rs-serde"
+description = "serde impl for msgpack-rs"
+license = "MIT"
+version = "0.0.1"
+authors = ["Yuta Iwama <ganmacs@gmail.com>"]
+edition = "2018"
+keywords = ["msgpack", "messagepack"]
+repository = "https://github.com/ganmacs/msgpack-rs"
+
+[dependencies]
+serde = "1.0.99"
+msgpack-rs = { version = "0.0.1", path = "../msgpack-core" }
+
+[dev-dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_bytes = "0.11"
