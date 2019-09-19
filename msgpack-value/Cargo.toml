@@ -1,0 +1,15 @@
+[lib]
+name = "msgpack_value"
+
+[package]
+name = "msgpack-rs-value"
+description = "value object for msgpack-rs"
+license = "MIT"
+version = "0.0.1"
+authors = ["Yuta Iwama <ganmacs@gmail.com>"]
+edition = "2018"
+keywords = ["msgpack", "messagepack"]
+repository = "https://github.com/ganmacs/msgpack-rs"
+
+[dependencies]
+msgpack-rs = { version = "0.0.1", path = "../msgpack-core" }

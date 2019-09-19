@@ -15,7 +15,7 @@ pub fn unpack_data<R: io::Read>(reader: &mut R, len: usize) -> Result<Vec<u8>, U
     Ok(buf)
 }
 
-fn unpack_data_ref<'a, R>(reader: &mut R, len: usize) -> Result<&'a [u8], UnpackError>
+pub fn unpack_data_ref<'a, R>(reader: &mut R, len: usize) -> Result<&'a [u8], UnpackError>
 where
     R: BufferedRead<'a>,
 {
@@ -39,6 +39,18 @@ pub fn unpack_ext_type_data<R: io::Read>(
     let ty = read_data_i8(reader)?;
     let vec = unpack_data(reader, len)?;
     Ok((ty, vec))
+}
+
+pub fn unpack_ext_type_data_ref<'a, R>(
+    reader: &mut R,
+    len: usize,
+) -> Result<(i8, &'a [u8]), UnpackError>
+where
+    R: BufferedRead<'a>,
+{
+    let ty = read_data_i8(reader)?;
+    let bin = unpack_data_ref(reader, len)?;
+    Ok((ty, bin))
 }
 
 pub fn unpack_u8<R: io::Read>(reader: &mut R) -> Result<u8, UnpackError> {
