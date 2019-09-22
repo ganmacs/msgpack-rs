@@ -4,7 +4,7 @@ use serde::ser::{self, SerializeTupleStruct};
 
 pub const EXT_TOKEN: &'static str = "$serde_json::private::Ext";
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum ExtType {
     FixExt1,
     FixExt2,
@@ -127,7 +127,7 @@ impl ser::Serialize for Ext {
                 // nothing
             }
         };
-        seri.serialize_field(&self.typ)?;
+        seri.serialize_field(&(self.typ as i8))?;
         seri.serialize_field(&self.data)?; // TODO
         seri.end()
     }
@@ -135,8 +135,18 @@ impl ser::Serialize for Ext {
 
 pub struct Timestamp(i64, u32);
 
-impl<'a> From<Timestamp> for Ext {
-    fn from(v: Timestamp) -> Self {
+impl ser::Serialize for Timestamp {
+    #[inline]
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: ser::Serializer,
+    {
+        Ext::from(self).serialize(serializer)
+    }
+}
+
+impl<'a> From<&Timestamp> for Ext {
+    fn from(v: &Timestamp) -> Self {
         let sec = v.0;
         let nsec = v.1;
         let mut v = vec![]; // TODO
@@ -157,5 +167,38 @@ impl<'a> From<Timestamp> for Ext {
             pack::primitive::write_data_i64(&mut v, sec).expect("u64");
             Ext::ext8(12, -1, &v)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde::Serialize;
+
+    #[test]
+    fn timestamp_to_ext() {
+        let t = Timestamp(1569144132, 33554431);
+        let v = Ext::from(&t);
+
+        assert_eq!(ExtType::FixExt8, v.ext_type);
+        assert_eq!(-1, v.typ);
+        assert_eq!(
+            vec![0x07, 0xff, 0xff, 0xfc, 0x5d, 0x87, 0x3d, 0x44],
+            v.data.as_ref()
+        );
+    }
+
+    #[test]
+    fn timestamp_serizlize() {
+        let mut writer = vec![];
+        let t = Timestamp(1569144132, 33554431);
+        let _ = t
+            .serialize(&mut crate::ser::Serializer::new(&mut writer))
+            .unwrap();
+
+        assert_eq!(
+            vec![0xd7, 0xff, 0x07, 0xff, 0xff, 0xfc, 0x5d, 0x87, 0x3d, 0x44],
+            writer,
+        );
     }
 }

@@ -95,7 +95,7 @@ impl<'a, W: io::Write + 'a> ser::SerializeTupleStruct for Compound<'a, W> {
     ) -> Result<Self::Ok, Self::Error> {
         match self {
             Compound::Normal(ref mut ser) => value.serialize(&mut **ser),
-            Compound::Ext(_) => unreachable!(),
+            Compound::Ext(ref mut ser) => value.serialize(&mut *ser),
         }
     }
 
@@ -114,7 +114,7 @@ impl<'a, W: io::Write + 'a> ser::SerializeTupleVariant for Compound<'a, W> {
     ) -> Result<Self::Ok, Self::Error> {
         match self {
             Compound::Normal(ref mut ser) => value.serialize(&mut **ser),
-            Compound::Ext(ref mut ser) => value.serialize(&mut *ser),
+            Compound::Ext(_) => unreachable!(),
         }
     }
 
