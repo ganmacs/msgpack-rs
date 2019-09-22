@@ -11,10 +11,11 @@ pub enum SerError {
     MustHaveLength,
     PackError(PackError),
     Custom(String),
+    InvalidSerializeMethod(&'static str),
     // InvalidValueWrite(ValueWriteError),
     // UnknownLength,
     // DepthLimitExceeded,
-    // Syntax(String),
+    // Syntax(String)
 }
 
 impl From<PackError> for SerError {
@@ -31,6 +32,7 @@ impl error::Error for SerError {
             MustHaveLength => "must have lenght",
             Custom(ref s) => s,
             PackError(ref e) => e.description(),
+            InvalidSerializeMethod(_) => "invalid seriaze method",
             // Error::InvalidValueWrite(..) => "invalid value write",
             // Error::UnknownLength => {
             //     "attempt to serialize struct, sequence or map with unknown length"
@@ -47,6 +49,7 @@ impl error::Error for SerError {
             MustHaveLength => None,
             PackError(ref s) => Some(s),
             Custom(_) => None,
+            InvalidSerializeMethod(_) => None,
             // Error::InvalidValueWrite(ref err) => Some(err),
             // Error::UnknownLength => None,
             // Error::DepthLimitExceeded => None,

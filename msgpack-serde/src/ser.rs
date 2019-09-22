@@ -1,15 +1,17 @@
 mod compound;
 mod error;
 
-use msgpack::pack;
-use std::io;
-
-use compound::Compound;
 pub use error::SerError;
+
+use crate::ext::EXT_TOKEN;
+use compound::Compound;
+use msgpack::pack;
+use serde::ser;
+use std::io;
 
 #[derive(Debug)]
 pub struct Serializer<W> {
-    wr: W,
+    pub(crate) wr: W,
 }
 
 impl<W> Serializer<W> {
@@ -22,7 +24,6 @@ macro_rules! delegate_impl {
     ($ser_method:ident, $pack_method:ident, $typ:ty) => {
         #[inline]
         fn $ser_method(self, v: $typ) -> Result<Self::Ok, Self::Error> {
-
             pack::$pack_method(&mut self.wr, v).map_err(Self::Error::from)
         }
     }
@@ -126,10 +127,13 @@ where
 
     fn serialize_tuple_struct(
         self,
-        _name: &'static str,
+        name: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleStruct, Self::Error> {
-        self.serialize_tuple(len)
+        match name {
+            EXT_TOKEN => Ok(self.compound_ext()),
+            _ => self.serialize_tuple(len),
+        }
     }
 
     fn serialize_tuple_variant(
@@ -175,5 +179,176 @@ where
         self.serialize_str(variant)?;
         pack::pack_map_header(&mut self.wr, 1)?;
         Ok(self.compound())
+    }
+}
+
+#[derive(Debug)]
+pub struct ExtSerializer<'a, W: 'a> {
+    wr: &'a mut W,
+}
+
+macro_rules! delegate_ext_error1 {
+    ($ser_method:ident, $typ:ty) => {
+        #[inline]
+        fn $ser_method(self, v: $typ) -> Result<Self::Ok, Self::Error> {
+            Err(SerError::InvalidSerializeMethod("serilize_byte is valid"))
+        }
+    }
+}
+
+impl<'a, W: io::Write + 'a> serde::Serializer for &mut ExtSerializer<'a, W> {
+    type Ok = ();
+    type Error = SerError;
+
+    type SerializeSeq = serde::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeTuple = serde::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeTupleStruct = serde::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeTupleVariant = serde::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeMap = serde::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeStruct = serde::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeStructVariant = serde::ser::Impossible<Self::Ok, Self::Error>;
+
+    delegate_ext_error1!(serialize_i16, i16);
+    delegate_ext_error1!(serialize_i32, i32);
+    delegate_ext_error1!(serialize_i64, i64);
+    delegate_ext_error1!(serialize_u64, u64);
+    delegate_ext_error1!(serialize_bool, bool);
+    delegate_ext_error1!(serialize_f32, f32);
+    delegate_ext_error1!(serialize_f64, f64);
+    delegate_ext_error1!(serialize_str, &str);
+    delegate_ext_error1!(serialize_unit_struct, &'static str);
+    delegate_ext_error1!(serialize_char, char);
+
+    // for ext8
+    #[inline]
+    fn serialize_u8(self, value: u8) -> Result<Self::Ok, Self::Error> {
+        pack::primitive::write_data_u8(&mut self.wr, value).map_err(Self::Error::from)
+    }
+
+    // for ext16
+    #[inline]
+    fn serialize_u16(self, value: u16) -> Result<Self::Ok, Self::Error> {
+        pack::primitive::write_data_u16(&mut self.wr, value).map_err(Self::Error::from)
+    }
+
+    // for ext32
+    #[inline]
+    fn serialize_u32(self, value: u32) -> Result<Self::Ok, Self::Error> {
+        pack::primitive::write_data_u32(&mut self.wr, value).map_err(Self::Error::from)
+    }
+
+    // for ext type
+    #[inline]
+    fn serialize_i8(self, value: i8) -> Result<Self::Ok, Self::Error> {
+        pack::primitive::write_data_i8(&mut self.wr, value).map_err(Self::Error::from)
+    }
+
+    // for ext data and ext code
+    #[inline]
+    fn serialize_bytes(self, value: &[u8]) -> Result<Self::Ok, Self::Error> {
+        pack::write_all(&mut self.wr, value).map_err(Self::Error::from)
+    }
+
+    #[inline]
+    fn serialize_tuple(self, _len: usize) -> Result<Self::SerializeTuple, Self::Error> {
+        Err(SerError::InvalidSerializeMethod("serilize_byte is valid"))
+    }
+
+    #[inline]
+    fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
+        Err(SerError::InvalidSerializeMethod("serilize_byte is valid"))
+    }
+
+    #[inline]
+    fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
+        Err(SerError::InvalidSerializeMethod("serilize_byte is valid"))
+    }
+
+    #[inline]
+    fn serialize_some<T: ?Sized>(self, _value: &T) -> Result<Self::Ok, Self::Error>
+    where
+        T: ser::Serialize,
+    {
+        Err(SerError::InvalidSerializeMethod("serilize_byte is valid"))
+    }
+
+    #[inline]
+    fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
+        Err(SerError::InvalidSerializeMethod("serilize_byte is valid"))
+    }
+
+    #[inline]
+    fn serialize_unit_variant(
+        self,
+        _name: &'static str,
+        _idx: u32,
+        _variant: &'static str,
+    ) -> Result<Self::Ok, Self::Error> {
+        Err(SerError::InvalidSerializeMethod("serilize_byte is valid"))
+    }
+
+    #[inline]
+    fn serialize_newtype_struct<T: ?Sized>(
+        self,
+        _name: &'static str,
+        _value: &T,
+    ) -> Result<Self::Ok, Self::Error>
+    where
+        T: ser::Serialize,
+    {
+        Err(SerError::InvalidSerializeMethod("serilize_byte is valid"))
+    }
+
+    fn serialize_newtype_variant<T: ?Sized>(
+        self,
+        _name: &'static str,
+        _idx: u32,
+        _variant: &'static str,
+        _value: &T,
+    ) -> Result<Self::Ok, Self::Error>
+    where
+        T: ser::Serialize,
+    {
+        Err(SerError::InvalidSerializeMethod("serilize_byte is valid"))
+    }
+
+    fn serialize_tuple_struct(
+        self,
+        _name: &'static str,
+        _len: usize,
+    ) -> Result<Self::SerializeTupleStruct, Self::Error> {
+        Err(SerError::InvalidSerializeMethod("serilize_byte is valid"))
+    }
+
+    fn serialize_tuple_variant(
+        self,
+        _name: &'static str,
+        _idx: u32,
+        _variant: &'static str,
+        _len: usize,
+    ) -> Result<Self::SerializeTupleVariant, Self::Error> {
+        Err(SerError::InvalidSerializeMethod("serilize_byte is valid"))
+    }
+
+    fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
+        Err(SerError::InvalidSerializeMethod("serilize_byte is valid"))
+    }
+
+    fn serialize_struct(
+        self,
+        _name: &'static str,
+        _len: usize,
+    ) -> Result<Self::SerializeStruct, Self::Error> {
+        Err(SerError::InvalidSerializeMethod("serilize_byte is valid"))
+    }
+
+    fn serialize_struct_variant(
+        self,
+        _name: &'static str,
+        _idx: u32,
+        _variant: &'static str,
+        _len: usize,
+    ) -> Result<Self::SerializeStructVariant, Self::Error> {
+        Err(SerError::InvalidSerializeMethod("serilize_byte is valid"))
     }
 }

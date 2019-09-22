@@ -14,6 +14,7 @@ repository = "https://github.com/ganmacs/msgpack-rs"
 [dependencies]
 serde = "1.0.99"
 msgpack-rs = { version = "0.0.1", path = "../msgpack-core" }
+bytes = { version = "0.4.12", features = ["serde"] }
 
 [dev-dependencies]
 serde = { version = "1.0", features = ["derive"] }

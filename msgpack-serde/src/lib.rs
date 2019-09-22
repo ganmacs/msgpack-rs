@@ -1,4 +1,5 @@
 mod de;
+pub mod ext;
 mod ser;
 
 use serde::de::DeserializeOwned;
