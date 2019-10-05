@@ -135,6 +135,12 @@ impl ser::Serialize for Ext {
 
 pub struct Timestamp(i64, u32);
 
+impl Timestamp {
+    pub fn new(sec: i64, nsec: u32) -> Self {
+        Timestamp(sec, nsec)
+    }
+}
+
 impl ser::Serialize for Timestamp {
     #[inline]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>

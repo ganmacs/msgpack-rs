@@ -150,3 +150,23 @@ fn ser_struct_variant() {
         msgpack_serde::pack(&d).unwrap()
     );
 }
+
+#[derive(Serialize)]
+struct MixedStruct {
+    a: u8,
+    t: msgpack_serde::Timestamp,
+}
+
+#[test]
+fn set_mixd_variant() {
+    let t = msgpack_serde::Timestamp::new(1569144132, 33554431);
+    let d = MixedStruct { a: 10, t: t };
+
+    assert_eq!(
+        vec![
+            0x82, 0xa1, 0x61, 0x0a, 0xa1, 0x74, 0xd7, 0xff, 0x07, 0xff, 0xff, 0xfc, 0x5d, 0x87,
+            0x3d, 0x44
+        ],
+        msgpack_serde::pack(&d).unwrap()
+    );
+}

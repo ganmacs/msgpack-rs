@@ -2,6 +2,7 @@ mod de;
 pub mod ext;
 mod ser;
 
+pub use ext::Timestamp;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
