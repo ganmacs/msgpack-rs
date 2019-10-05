@@ -37,27 +37,27 @@ fn de_u32() {
 }
 
 #[test]
-fn unpack_seq() {
+fn de_seq() {
     let v2: Vec<u8> = msgpack_serde::unpack(&[0x92, 0x01, 0x02]).unwrap();
     assert_eq!(vec![1, 2], v2);
 }
 
 #[test]
-fn unpack_tuple() {
+fn de_tuple() {
     let buf = [0x92, 0x01, 0x02];
     let ret: (u8, u8) = msgpack_serde::unpack(&buf).unwrap();
     assert_eq!((1, 2), ret);
 }
 
 #[test]
-fn unpack_string() {
+fn de_string() {
     let buf = [0xa5, 0x68, 0x65, 0x6c, 0x6c, 0x6f];
     let ret: String = msgpack_serde::unpack(&buf).unwrap();
     assert_eq!("hello".to_string(), ret);
 }
 
 #[test]
-fn unpack_str() {
+fn de_str() {
     use std::borrow::Cow;
     let buf = [0xa5, 0x68, 0x65, 0x6c, 0x6c, 0x6f];
     let ret: Cow<str> = msgpack_serde::unpack(&buf).unwrap();
@@ -71,7 +71,7 @@ struct Point {
 }
 
 #[test]
-fn unpack_struct() {
+fn de_struct() {
     let buf = [0x82, 0xa1, 0x68, 0x01, 0xa1, 0x6f, 0xa1, 0x6f];
     let ret: Point = msgpack_serde::unpack(&buf).unwrap();
     assert_eq!(
