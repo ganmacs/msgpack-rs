@@ -1,6 +1,10 @@
 use bytes;
+use serde_bytes;
+
 use msgpack::{self, pack};
+use serde::de;
 use serde::ser::{self, SerializeTupleStruct};
+use std::fmt;
 
 pub const EXT_TOKEN: &'static str = "$serde_json::private::Ext";
 
@@ -14,6 +18,66 @@ enum ExtType {
     Ext8(u8),
     Ext16(u16),
     Ext32(u32),
+}
+
+impl<'de> de::Deserialize<'de> for ExtType {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: de::Deserializer<'de>,
+    {
+        struct ExtTypeVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for ExtTypeVisitor {
+            type Value = ExtType;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+                formatter.write_str("valid msgpack exttype")
+            }
+
+            #[inline]
+            fn visit_seq<V>(self, mut seq: V) -> Result<Self::Value, V::Error>
+            where
+                V: de::SeqAccess<'de>,
+            {
+                let h = seq.next_element();
+                let h: u8 = h?.ok_or_else(|| de::Error::invalid_length(0, &self))?;
+
+                Ok(match h {
+                    msgpack::code::FIXEXT1 => ExtType::FixExt1,
+                    msgpack::code::FIXEXT2 => ExtType::FixExt2,
+                    msgpack::code::FIXEXT4 => ExtType::FixExt4,
+                    msgpack::code::FIXEXT8 => ExtType::FixExt8,
+                    msgpack::code::FIXEXT16 => ExtType::FixExt16,
+                    msgpack::code::EXT8 => {
+                        let v: u8 = seq
+                            .next_element()?
+                            .ok_or_else(|| de::Error::invalid_length(1, &self))?;
+                        ExtType::Ext8(v)
+                    }
+                    msgpack::code::EXT16 => {
+                        let v: u16 = seq
+                            .next_element()?
+                            .ok_or_else(|| de::Error::invalid_length(1, &self))?;
+                        ExtType::Ext16(v)
+                    }
+                    msgpack::code::EXT32 => {
+                        let v: u32 = seq
+                            .next_element()?
+                            .ok_or_else(|| de::Error::invalid_length(1, &self))?;
+                        ExtType::Ext32(v)
+                    }
+                    v => {
+                        return Err(de::Error::custom(format!(
+                            "invalid code for ext type: {:}",
+                            v
+                        )));
+                    }
+                })
+            }
+        }
+
+        deserializer.deserialize_seq(ExtTypeVisitor)
+    }
 }
 
 impl From<&ExtType> for u8 {
@@ -36,6 +100,53 @@ pub struct Ext {
     ext_type: ExtType,
     typ: i8,
     data: bytes::Bytes, // TODO: fix trait base
+}
+
+impl<'de> de::Deserialize<'de> for Ext {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: de::Deserializer<'de>,
+    {
+        struct ExtVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for ExtVisitor {
+            type Value = Ext;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+                formatter.write_str("valid msgpack")
+            }
+
+            #[inline]
+            fn visit_seq<V>(self, mut seq: V) -> Result<Self::Value, V::Error>
+            where
+                V: de::SeqAccess<'de>,
+            {
+                println!("visit_seq");
+                let ext: ExtType = seq
+                    .next_element()?
+                    .ok_or_else(|| de::Error::invalid_length(0, &self))?;
+                println!("ext: {:?}", ext);
+                let id: i8 = seq
+                    .next_element()?
+                    .ok_or_else(|| de::Error::invalid_length(1, &self))?;
+                println!("id {:?}", id);
+
+                let data = seq.next_element();
+                println!("{:?}", data);
+                let data: &serde_bytes::Bytes =
+                    data?.ok_or_else(|| de::Error::invalid_length(2, &self))?;
+                println!("data: {:?}", data);
+
+                Ok(Ext {
+                    ext_type: ext,
+                    typ: id,
+                    data: bytes::Bytes::from(data.as_ref()),
+                })
+            }
+        }
+
+        deserializer.deserialize_newtype_struct("Ext", ExtVisitor)
+    }
 }
 
 impl Ext {
@@ -179,7 +290,21 @@ impl<'a> From<&Timestamp> for Ext {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde::Serialize;
+    use serde::{Deserialize, Serialize};
+
+    #[test]
+    fn ext8_deserialize() {
+        let buf = &[0xd7, 0xff, 0x07, 0xff, 0xff, 0xfc, 0x5d, 0x87, 0x3d, 0x44];
+        let mut de = crate::de::Deserializer::new(buf.as_ref());
+        let v: Ext = Deserialize::deserialize(&mut de).unwrap();
+
+        assert_eq!(ExtType::FixExt8, v.ext_type);
+        assert_eq!(-1, v.typ);
+        assert_eq!(
+            vec![0x07, 0xff, 0xff, 0xfc, 0x5d, 0x87, 0x3d, 0x44],
+            v.data.as_ref()
+        );
+    }
 
     #[test]
     fn timestamp_to_ext() {

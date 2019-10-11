@@ -2,11 +2,10 @@ pub mod primitive;
 
 use crate::BufferedRead;
 use crate::{code::Code, error::UnpackError};
-use primitive::*;
 use std::io::{self, ErrorKind};
 use std::{str, string};
 
-pub use primitive::read_code;
+pub use primitive::*;
 
 pub fn unpack_data<R: io::Read>(reader: &mut R, len: usize) -> Result<Vec<u8>, UnpackError> {
     let mut buf = Vec::with_capacity(len);

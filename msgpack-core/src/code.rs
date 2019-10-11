@@ -76,6 +76,57 @@ pub enum Code {
     Reserved,
 }
 
+pub enum CodeSize {
+    Var4,
+    Var2,
+    Var1,
+    FixLen(u8),
+}
+
+impl Code {
+    pub fn body_size(&self) -> CodeSize {
+        match self {
+            Code::Nil => CodeSize::FixLen(0),
+            Code::True => CodeSize::FixLen(0),
+            Code::False => CodeSize::FixLen(0),
+            Code::PosInt(_) => CodeSize::FixLen(0),
+            Code::NegInt(_) => CodeSize::FixLen(0),
+            Code::Uint8 => CodeSize::FixLen(1),
+            Code::Uint16 => CodeSize::FixLen(2),
+            Code::Uint32 => CodeSize::FixLen(4),
+            Code::Uint64 => CodeSize::FixLen(8),
+            Code::Int8 => CodeSize::FixLen(1),
+            Code::Int16 => CodeSize::FixLen(2),
+            Code::Int32 => CodeSize::FixLen(4),
+            Code::Int64 => CodeSize::FixLen(8),
+            Code::Float32 => CodeSize::FixLen(4),
+            Code::Float64 => CodeSize::FixLen(8),
+            Code::FixStr(v) => CodeSize::FixLen(*v),
+            Code::Str8 => CodeSize::Var1,
+            Code::Str16 => CodeSize::Var2,
+            Code::Str32 => CodeSize::Var4,
+            Code::Bin8 => CodeSize::Var1,
+            Code::Bin16 => CodeSize::Var2,
+            Code::Bin32 => CodeSize::Var4,
+            Code::FixArray(v) => CodeSize::FixLen(*v),
+            Code::Array16 => CodeSize::Var2,
+            Code::Array32 => CodeSize::Var4,
+            Code::FixMap(v) => CodeSize::FixLen(*v),
+            Code::Map16 => CodeSize::Var2,
+            Code::Map32 => CodeSize::Var4,
+            Code::FixExt1 => CodeSize::FixLen(1),
+            Code::FixExt2 => CodeSize::FixLen(2),
+            Code::FixExt4 => CodeSize::FixLen(4),
+            Code::FixExt8 => CodeSize::FixLen(8),
+            Code::FixExt16 => CodeSize::FixLen(16),
+            Code::Ext8 => CodeSize::Var1,
+            Code::Ext16 => CodeSize::Var2,
+            Code::Ext32 => CodeSize::Var4,
+            Code::Reserved => unreachable!(), // tmp
+        }
+    }
+}
+
 impl From<u8> for Code {
     fn from(v: u8) -> Self {
         match v {
