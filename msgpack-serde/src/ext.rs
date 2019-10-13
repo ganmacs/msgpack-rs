@@ -1,10 +1,10 @@
 use bytes;
 use serde_bytes;
 
-use msgpack::{self, pack};
+use msgpack::{self, pack, unpack};
 use serde::de;
 use serde::ser::{self, SerializeTupleStruct};
-use std::fmt;
+use std::{fmt, io};
 
 pub const EXT_TOKEN: &'static str = "$serde_json::private::Ext";
 
@@ -102,13 +102,13 @@ pub struct Ext {
     data: bytes::Bytes, // TODO: fix trait base
 }
 
+struct ExtVisitor;
+
 impl<'de> de::Deserialize<'de> for Ext {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: de::Deserializer<'de>,
     {
-        struct ExtVisitor;
-
         impl<'de> serde::de::Visitor<'de> for ExtVisitor {
             type Value = Ext;
 
@@ -244,6 +244,7 @@ impl ser::Serialize for Ext {
     }
 }
 
+#[derive(Debug, PartialEq)]
 pub struct Timestamp(i64, u32);
 
 impl Timestamp {
@@ -259,6 +260,52 @@ impl ser::Serialize for Timestamp {
         S: ser::Serializer,
     {
         Ext::from(self).serialize(serializer)
+    }
+}
+
+impl<'de> de::Deserialize<'de> for Timestamp {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: de::Deserializer<'de>,
+    {
+        let v: Ext = deserializer.deserialize_newtype_struct("Timestamp", ExtVisitor)?;
+        if v.typ != -1 {
+            return Err(de::Error::custom(format!(
+                "type is wrong, expectd -1 but {:?}",
+                v.typ
+            )));
+        }
+
+        match v.ext_type {
+            ExtType::FixExt4 => {
+                let sec = unpack::primitive::read_data_u32(&mut io::Cursor::new(v.data)).unwrap();
+                Ok(Timestamp::new(sec as i64, 0))
+            }
+            ExtType::FixExt8 => {
+                let val = unpack::primitive::read_data_u64(&mut io::Cursor::new(v.data)).unwrap();
+                let nsec = val >> 34;
+                let sec = val & 0x00000003ffffffff;
+                Ok(Timestamp::new(sec as i64, nsec as u32))
+            }
+            ExtType::Ext8(size) => {
+                if size != 12 {
+                    return Err(de::Error::custom(format!(
+                        "expected 12 as Timestamp size but {:?}",
+                        size
+                    )));
+                };
+                let mut mm = io::Cursor::new(v.data);
+                let sec = unpack::primitive::read_data_u32(&mut mm).unwrap();
+                let nsec = unpack::primitive::read_data_u64(&mut mm).unwrap();
+                Ok(Timestamp::new(sec as i64, nsec as u32))
+            }
+            v => {
+                return Err(de::Error::custom(format!(
+                    "expected FixExt4, FixExt8 or Ext8, actual value {:?}",
+                    v
+                )))
+            }
+        }
     }
 }
 
@@ -304,6 +351,15 @@ mod tests {
             vec![0x07, 0xff, 0xff, 0xfc, 0x5d, 0x87, 0x3d, 0x44],
             v.data.as_ref()
         );
+    }
+
+    #[test]
+    fn timestamp_deserialize() {
+        let buf = &[0xd7, 0xff, 0x07, 0xff, 0xff, 0xfc, 0x5d, 0x87, 0x3d, 0x44];
+        let mut de = crate::de::Deserializer::new(buf.as_ref());
+        let v: Timestamp = Deserialize::deserialize(&mut de).unwrap();
+
+        assert_eq!(Timestamp(1569144132, 33554431), v);
     }
 
     #[test]
