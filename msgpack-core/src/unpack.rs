@@ -288,7 +288,7 @@ pub fn unpack_ext_header<R: io::Read>(reader: &mut R) -> Result<(u32, i8), Unpac
     Ok((len, ty))
 }
 
-pub fn unpack_timestamp32<R: io::Read>(reader: &mut R) -> Result<(u32), UnpackError> {
+pub fn unpack_timestamp32<R: io::Read>(reader: &mut R) -> Result<u32, UnpackError> {
     match read_code(reader)? {
         Code::FixExt4 => {
             let type_tag = read_data_i8(reader)?;

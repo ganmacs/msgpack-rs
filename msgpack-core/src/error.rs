@@ -16,7 +16,7 @@ impl From<io::Error> for PackError {
 
 impl Display for PackError {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        error::Error::description(self).fmt(f)
+        self.to_string().fmt(f)
     }
 }
 
@@ -27,7 +27,7 @@ impl error::Error for PackError {
         }
     }
 
-    fn cause(&self) -> Option<&error::Error> {
+    fn cause(&self) -> Option<&dyn error::Error> {
         match *self {
             PackError::WriteError(ref e) => Some(e),
         }
@@ -42,7 +42,7 @@ pub enum UnpackError {
 
 impl Display for UnpackError {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        error::Error::description(self).fmt(f)
+        self.to_string().fmt(f)
     }
 }
 
@@ -54,7 +54,7 @@ impl error::Error for UnpackError {
         }
     }
 
-    fn cause(&self) -> Option<&error::Error> {
+    fn cause(&self) -> Option<&dyn error::Error> {
         match *self {
             UnpackError::InvalidData(ref err) => Some(err),
             UnpackError::TypeMismatch(..) => None,

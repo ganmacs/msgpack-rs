@@ -7,14 +7,14 @@ description = "serde impl for msgpack-rs"
 license = "MIT"
 version = "0.0.1"
 authors = ["Yuta Iwama <ganmacs@gmail.com>"]
-edition = "2018"
+edition = "2021"
 keywords = ["msgpack", "messagepack"]
 repository = "https://github.com/ganmacs/msgpack-rs"
 
 [dependencies]
 serde = "1.0.99"
 msgpack-rs = { version = "0.0.1", path = "../msgpack-core" }
-bytes = { version = "0.4.12", features = ["serde"] }
+bytes = { version = "1.2", features = ["serde"] }
 serde_bytes = "0.11"
 
 [dev-dependencies]

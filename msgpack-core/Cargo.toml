@@ -7,10 +7,10 @@ description = "rust implementation of msgpack"
 license = "MIT"
 version = "0.0.1"
 authors = ["Yuta Iwama <ganmacs@gmail.com>"]
-edition = "2018"
+edition = "2021"
 keywords = ["msgpack", "messagepack"]
 repository = "https://github.com/ganmacs/msgpack-rs"
 
 [dependencies]
-byteorder = "1"
-bytes = "0.4.12"
+byteorder = "1.4"
+bytes = "1.2"
